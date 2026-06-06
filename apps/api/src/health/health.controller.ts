@@ -3,8 +3,10 @@ import { prisma } from '@boosters/db';
 import type { Env } from '@boosters/config';
 import { isSafeMode } from '@boosters/config';
 import { ENV } from '../config/config.module.js';
+import { Public } from '../auth/auth.decorators.js';
 
 @Controller('health')
+@Public()
 export class HealthController {
   constructor(@Inject(ENV) private readonly env: Env) {}
 

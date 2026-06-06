@@ -2,11 +2,11 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { loadEnv } from '@boosters/config';
+import { bootstrapEnv } from '@boosters/config';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const env = loadEnv();
+  const env = bootstrapEnv();
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
   app.setGlobalPrefix('api');

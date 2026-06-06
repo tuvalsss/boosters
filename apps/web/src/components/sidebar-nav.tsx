@@ -2,15 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { NAV_SECTIONS } from './nav-data';
+import { useAuth } from '@/lib/auth-context';
+import { isStaff } from '@/lib/types';
+import { NAV_SECTIONS, type NavSection } from './nav-data';
+import { BagIcon, TrophyIcon } from './icons';
 
 /** Shared navigation list — rendered in both the desktop rail and mobile drawer. */
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { authenticated, dbUser } = useAuth();
+
+  // Auth-dependent section (Account, plus Admin for staff).
+  const accountSection: NavSection | null = authenticated
+    ? {
+        title: 'Account',
+        items: [
+          { label: 'My Account', href: '/account', icon: BagIcon },
+          ...(isStaff(dbUser?.role) ? [{ label: 'Admin', href: '/admin', icon: TrophyIcon }] : []),
+        ],
+      }
+    : null;
+
+  const sections = accountSection ? [...NAV_SECTIONS, accountSection] : NAV_SECTIONS;
 
   return (
     <nav className="flex flex-col gap-6">
-      {NAV_SECTIONS.map((section, i) => (
+      {sections.map((section, i) => (
         <div key={section.title ?? `primary-${i}`} className="flex flex-col gap-1">
           {section.title && (
             <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-white/35">

@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
 import { Logo } from './brand';
 import { SidebarNav } from './sidebar-nav';
 import { ArrowLeftIcon, CloseIcon, HelpIcon, LoginIcon, MenuIcon } from './icons';
@@ -77,21 +79,60 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         >
           <HelpIcon />
         </button>
-        <button
-          type="button"
-          className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/90 hover:bg-white/10"
-        >
-          <LoginIcon />
-          <span>Login</span>
-        </button>
-        <button
-          type="button"
-          className="flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-black hover:bg-white/90"
-        >
-          Sign Up
-        </button>
+        <AuthControls />
       </div>
     </header>
+  );
+}
+
+function AuthControls() {
+  const { ready, authenticated, login, logout, dbUser } = useAuth();
+
+  if (!ready) {
+    return <div className="h-10 w-24 animate-pulse rounded-xl bg-white/5" aria-hidden />;
+  }
+
+  if (authenticated) {
+    const label = dbUser?.displayName || dbUser?.email || 'Account';
+    return (
+      <div className="flex items-center gap-2">
+        <Link
+          href="/account"
+          className="flex h-10 max-w-[10rem] items-center gap-2 truncate rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/90 hover:bg-white/10"
+          title={label}
+        >
+          <span className="h-6 w-6 shrink-0 rounded-full bg-gradient-to-br from-booster to-emerald-400" />
+          <span className="truncate">{label}</span>
+        </Link>
+        <button
+          type="button"
+          onClick={logout}
+          className="flex h-10 items-center rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/70 hover:text-white"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={login}
+        className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/90 hover:bg-white/10"
+      >
+        <LoginIcon />
+        <span>Login</span>
+      </button>
+      <button
+        type="button"
+        onClick={login}
+        className="flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-black hover:bg-white/90"
+      >
+        Sign Up
+      </button>
+    </>
   );
 }
 

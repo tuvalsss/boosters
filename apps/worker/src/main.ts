@@ -1,12 +1,12 @@
 // Worker entrypoint. Phase 1: connects to Redis, asserts safe mode, and idles.
 // Real processors are registered in later phases.
 
-import { assertSafeMode, loadEnv } from '@boosters/config';
+import { assertSafeMode, bootstrapEnv } from '@boosters/config';
 import { Redis } from 'ioredis';
 import { QUEUE_NAMES } from './queues.js';
 
 async function main() {
-  const env = loadEnv();
+  const env = bootstrapEnv();
   assertSafeMode(env);
 
   const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });

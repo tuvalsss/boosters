@@ -31,8 +31,33 @@ See `packages/db/prisma/schema.prisma` and the `*_custody_gate_guards` migration
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind, installable PWA, mobile-first.
 - **Backend:** NestJS (Fastify) + PostgreSQL (Prisma) + Redis (BullMQ workers).
 - **Blockchain:** Solana, Metaplex Bubblegum cNFTs, Helius DAS reads _(wired in Phase 3)._
-- **Auth/wallets:** Privy _(Phase 2)._ **Payments:** Coinflow sandbox _(Phase 10)._
-- **Randomness:** Solana VRF + commit-reveal _(Phase 6)._
+- **Auth/wallets:** Privy (real) — email/Google/Apple + embedded & external Solana wallets.
+- **Payments:** Coinflow sandbox _(Phase 10)._ **Randomness:** Solana VRF + commit-reveal _(Phase 6)._
+
+## Environment — one file
+
+All configuration lives in a **single root `.env`** (copy from `.env.example`).
+`bootstrapEnv()` loads it for the api/worker and `next.config.mjs` loads it for
+the web app — there are no per-app env files. To enable auth, create a Privy app
+and set `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `NEXT_PUBLIC_PRIVY_APP_ID`, and list
+your email in `ADMIN_BOOTSTRAP_EMAILS` to be granted ADMIN on first login.
+
+## Auth, RBAC & admin (real)
+
+- **Login:** real Privy (email / Google / Apple / external wallet) with embedded
+  Solana wallets created for users without one.
+- **Sessions:** the API verifies the Privy access token on every request
+  (global `PrivyAuthGuard`), provisions a durable DB `User` on first login, and
+  attaches it to the request. No mock users, no fake tokens.
+- **RBAC:** `USER` / `OPS` / `ADMIN` roles enforced by a global `RolesGuard` +
+  `@Roles()` decorator. New accounts start on a `NEW_ACCOUNT` hold (anti-fraud).
+- **Admin panel** (`/admin`): staff-only console to search users and change
+  roles (ADMIN), KYC status and account holds (ADMIN/OPS). Every mutation is
+  written to the append-only audit log.
+- **KYC:** real status machine. The devnet `manual` provider sets `PENDING` and
+  waits for an ops decision — it never auto-approves. `veriff`/`sumsub` are gated
+  behind `ENABLE_REAL_KYC` (Phase 10).
+- **Account** (`/account`): profile + wallet + KYC self-service.
 
 ## Monorepo layout
 
@@ -102,17 +127,21 @@ name to replace it** — no code change needed. Regenerate placeholders with
 
 **Phase 1 — Scaffold: complete.** Monorepo + Docker + Postgres/Prisma domain
 model + migrations + Next.js PWA shell + NestJS/worker skeletons + CI + env
-config + tests. Plus the visual home/packs/nav shell and the asset pipeline.
+config + tests, plus the visual home/packs/nav shell and the asset pipeline.
 
-**Stubbed (by design, per phase):** auth/wallets, cNFT mint/burn, on-chain
-settlement, payments, KYC, VRF, real pack/raffle/buyback logic. The worker
-declares queues but registers no processors yet.
+**Phase 2 — Auth + wallets + RBAC + admin: complete.** Real Privy auth, global
+auth + roles guards, DB-backed user provisioning, profile/account, admin/ops
+console with audited role/KYC/hold changes, a real KYC status machine, and a
+single consolidated `.env`. Integration-tested against Postgres.
 
-**Next:** Phase 2 — Privy auth + embedded Solana wallets + user/profile + KYC
-status stub.
+**Gated until audit (not stubbed away — flag-protected):** mainnet and real
+payments. **Per later phases:** cNFT mint/burn, on-chain settlement, VRF, real
+pack/raffle/buyback logic, real KYC providers. The worker declares queues but
+registers no processors yet.
+
+**Next:** Phase 3 — Vault state machine, admin intake/grading, and Bubblegum
+cNFT mint on devnet wired to `GRADED → VAULTED`.
 
 ## Build order
 
-1. **Scaffold** ✅ 2. Auth + wallets · 3. Vault + cNFT minting ·
-   4. Marketplace · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback ·
-   8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. Vault + cNFT minting · 4. Marketplace · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.

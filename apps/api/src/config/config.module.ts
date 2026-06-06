@@ -1,11 +1,11 @@
 import { Global, Module } from '@nestjs/common';
-import { assertSafeMode, loadEnv, type Env } from '@boosters/config';
+import { assertSafeMode, bootstrapEnv, type Env } from '@boosters/config';
 
 export const ENV = Symbol('ENV');
 
 /**
- * Loads + validates env once at boot and asserts safe (devnet/sandbox) mode.
- * Exposed globally so any provider can inject the validated `Env`.
+ * Loads the single root `.env`, validates it, and asserts safe (devnet/sandbox)
+ * mode once at boot. Exposed globally so any provider can inject `Env`.
  */
 @Global()
 @Module({
@@ -13,7 +13,7 @@ export const ENV = Symbol('ENV');
     {
       provide: ENV,
       useFactory: (): Env => {
-        const env = loadEnv();
+        const env = bootstrapEnv();
         assertSafeMode(env);
         return env;
       },

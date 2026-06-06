@@ -1,10 +1,16 @@
 // Centralised, validated runtime configuration for Boosters.
 //
+// Single source of truth: ONE `.env` at the repo root feeds every app
+// (web, api, worker). `bootstrapEnv()` loads it, then `loadEnv()` validates.
+//
 // GUARDRAIL (spec §9): the platform runs on devnet/sandbox by default. Real
 // mainnet and real payments are only permitted behind explicit flags AND only
 // after a smart-contract audit. `assertSafeMode()` makes "accidentally live"
 // impossible without setting two independent flags on purpose.
 
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { config as dotenvConfig } from 'dotenv';
 import { z } from 'zod';
 
 const boolFromEnv = z
@@ -38,6 +44,21 @@ export const envSchema = z.object({
   HELIUS_API_KEY: z.string().optional(),
   HELIUS_RPC_URL: z.string().optional(),
 
+  // Auth: Privy. Required at runtime for auth to function; optional at the
+  // schema level so build/typecheck/dev tooling work without secrets present.
+  PRIVY_APP_ID: z.string().optional(),
+  PRIVY_APP_SECRET: z.string().optional(),
+  // Optional offline JWT verification key (ES256 public key, PEM).
+  PRIVY_VERIFICATION_KEY: z.string().optional(),
+
+  // Comma-separated emails auto-granted ADMIN on first login (bootstraps the
+  // admin panel without a chicken-and-egg). Real accounts, not seeded mocks.
+  ADMIN_BOOTSTRAP_EMAILS: z.string().default(''),
+
+  // KYC provider. `manual` = real ops review via the admin panel (devnet
+  // default). `veriff`/`sumsub` are gated behind ENABLE_REAL_KYC (Phase 10).
+  KYC_PROVIDER: z.enum(['manual', 'veriff', 'sumsub']).default('manual'),
+
   // Treasury / fees guardrails.
   BUYBACK_FLOAT_FLOOR_USDC: intFromEnv.default(1000),
   BUYBACK_DEFAULT_PERCENT_BPS: intFromEnv.default(8750),
@@ -64,6 +85,38 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
   return parsed.data;
+}
+
+/** Walk up from `start` to find the monorepo root (where pnpm-workspace.yaml lives). */
+function findRepoRoot(start: string): string | null {
+  let dir = start;
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
+/**
+ * Load the single root `.env` (if present) into process.env, then validate.
+ * Existing process.env values win, so real deployment env vars are never
+ * overridden by a committed file. Call this once at the start of api/worker.
+ */
+export function bootstrapEnv(cwd: string = process.cwd()): Env {
+  const root = findRepoRoot(cwd);
+  if (root) dotenvConfig({ path: join(root, '.env') });
+  return loadEnv();
+}
+
+/** Parse ADMIN_BOOTSTRAP_EMAILS into a normalised, deduped set. */
+export function adminBootstrapEmails(env: Env): Set<string> {
+  return new Set(
+    env.ADMIN_BOOTSTRAP_EMAILS.split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  );
 }
 
 /**
