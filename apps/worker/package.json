@@ -1,0 +1,29 @@
+{
+  "name": "@boosters/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@boosters/config": "workspace:*",
+    "@boosters/db": "workspace:*",
+    "bullmq": "^5.13.2",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@boosters/eslint-config": "workspace:*",
+    "@boosters/tsconfig": "workspace:*",
+    "@types/node": "^22.7.4",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1",
+    "eslint": "^9.11.1"
+  }
+}

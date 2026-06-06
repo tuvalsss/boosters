@@ -1,0 +1,19 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  transpilePackages: ['@boosters/config'],
+  async headers() {
+    return [
+      {
+        // Service worker must be served from the root scope.
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;

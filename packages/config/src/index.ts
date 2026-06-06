@@ -1,0 +1,100 @@
+// Centralised, validated runtime configuration for Boosters.
+//
+// GUARDRAIL (spec §9): the platform runs on devnet/sandbox by default. Real
+// mainnet and real payments are only permitted behind explicit flags AND only
+// after a smart-contract audit. `assertSafeMode()` makes "accidentally live"
+// impossible without setting two independent flags on purpose.
+
+import { z } from 'zod';
+
+const boolFromEnv = z
+  .enum(['true', 'false'])
+  .transform((v) => v === 'true')
+  .or(z.boolean());
+
+const intFromEnv = z.coerce.number().int();
+
+export const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+
+  // Network / mode guardrails.
+  SOLANA_CLUSTER: z.enum(['devnet', 'testnet', 'mainnet-beta']).default('devnet'),
+  PAYMENTS_MODE: z.enum(['sandbox', 'live']).default('sandbox'),
+  ENABLE_MAINNET: boolFromEnv.default(false),
+  ENABLE_REAL_PAYMENTS: boolFromEnv.default(false),
+  ENABLE_REAL_KYC: boolFromEnv.default(false),
+
+  // Infra.
+  DATABASE_URL: z.string().url().or(z.string().startsWith('postgresql://')),
+  REDIS_URL: z.string().default('redis://localhost:6379'),
+
+  // API.
+  API_PORT: intFromEnv.default(4000),
+  API_HOST: z.string().default('0.0.0.0'),
+  API_CORS_ORIGIN: z.string().default('http://localhost:3000'),
+
+  // Solana / RPC.
+  SOLANA_RPC_URL: z.string().default('https://api.devnet.solana.com'),
+  HELIUS_API_KEY: z.string().optional(),
+  HELIUS_RPC_URL: z.string().optional(),
+
+  // Treasury / fees guardrails.
+  BUYBACK_FLOAT_FLOOR_USDC: intFromEnv.default(1000),
+  BUYBACK_DEFAULT_PERCENT_BPS: intFromEnv.default(8750),
+  MARKETPLACE_FEE_BPS: intFromEnv.default(200),
+
+  // Anti-fraud limits.
+  LISTING_FMV_DEVIATION_BPS: intFromEnv.default(2500),
+  RATE_LIMIT_LISTINGS_PER_DAY: intFromEnv.default(25),
+  RATE_LIMIT_SUBMISSIONS_PER_DAY: intFromEnv.default(10),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+/**
+ * Parse + validate the given environment (defaults to process.env).
+ * Throws a readable error listing every invalid/missing variable.
+ */
+export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
+  const parsed = envSchema.safeParse(source);
+  if (!parsed.success) {
+    const issues = parsed.error.issues
+      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
+    throw new Error(`Invalid environment configuration:\n${issues}`);
+  }
+  return parsed.data;
+}
+
+/**
+ * Hard guardrail. Refuses to enable a "live" capability unless BOTH the cluster
+ * and the corresponding flag are explicitly set. Call this at startup of any
+ * service that can move funds or mint on-chain.
+ *
+ * @throws if the configuration is internally inconsistent (e.g. live payments
+ *         requested while still pointed at devnet, or mainnet without its flag).
+ */
+export function assertSafeMode(env: Env): void {
+  if (env.SOLANA_CLUSTER === 'mainnet-beta' && !env.ENABLE_MAINNET) {
+    throw new Error('SOLANA_CLUSTER=mainnet-beta requires ENABLE_MAINNET=true (post-audit only).');
+  }
+  if (env.ENABLE_MAINNET && env.SOLANA_CLUSTER !== 'mainnet-beta') {
+    throw new Error('ENABLE_MAINNET=true but SOLANA_CLUSTER is not mainnet-beta — inconsistent.');
+  }
+  if (env.PAYMENTS_MODE === 'live' && !env.ENABLE_REAL_PAYMENTS) {
+    throw new Error('PAYMENTS_MODE=live requires ENABLE_REAL_PAYMENTS=true (post-audit only).');
+  }
+  if (env.ENABLE_REAL_PAYMENTS && env.PAYMENTS_MODE !== 'live') {
+    throw new Error('ENABLE_REAL_PAYMENTS=true but PAYMENTS_MODE is not live — inconsistent.');
+  }
+}
+
+/** True when the process is running fully in safe (devnet + sandbox) mode. */
+export function isSafeMode(env: Env): boolean {
+  return (
+    env.SOLANA_CLUSTER !== 'mainnet-beta' &&
+    !env.ENABLE_MAINNET &&
+    env.PAYMENTS_MODE === 'sandbox' &&
+    !env.ENABLE_REAL_PAYMENTS
+  );
+}

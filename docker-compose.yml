@@ -1,0 +1,39 @@
+# Local dev infra for Boosters (devnet/sandbox only).
+# Brings up Postgres + Redis. App services run on the host via `pnpm dev`.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: boosters-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: boosters
+      POSTGRES_PASSWORD: boosters
+      POSTGRES_DB: boosters
+    ports:
+      - "5432:5432"
+    volumes:
+      - boosters_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boosters -d boosters"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: boosters-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - boosters_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  boosters_pgdata:
+  boosters_redisdata:

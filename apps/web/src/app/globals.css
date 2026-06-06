@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply text-white antialiased;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(109, 40, 217, 0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(16, 185, 129, 0.1), transparent 55%), #07070a;
+  background-attachment: fixed;
+}
+
+/* Pack "pop" pulse while shuffling settles. */
+@keyframes pack-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pack-pop {
+  animation: pack-pop 0.6s ease-in-out infinite;
+}
+
+/* Slim scrollbars for the sidebar. */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}

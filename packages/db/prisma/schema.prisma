@@ -1,0 +1,598 @@
+// =============================================================================
+// Boosters — Prisma schema (domain model)
+//
+// CENTRAL INVARIANT — THE CUSTODY GATE (spec §3):
+//   A tradeable Token exists IFF it is backed by a real PhysicalCard that is
+//   currently received, authenticated, graded, and held in the vault.
+//
+// How the gate is expressed in this schema:
+//   * Token has a REQUIRED, UNIQUE 1:1 link to a VaultItem (no orphan tokens).
+//   * VaultItem has a REQUIRED, UNIQUE 1:1 link to a PhysicalCard.
+//   * Listing / PackPoolItem / Raffle all REQUIRE a vaultItemId (you cannot
+//     list/pack/raffle what is not vaulted).
+//   * VaultItemState models the lifecycle INTAKE -> ... -> VAULTED -> RELEASED.
+//   * Additional DB-level guards (state checks, single-active-listing, burn
+//     immutability) are added as raw-SQL CHECK constraints / triggers in the
+//     SQL migration that accompanies this schema. App + smart-contract layers
+//     enforce the rest. NOTHING here is business logic — Phase 1 is structure.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Enums
+// ----------------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  OPS // vault intake / grading entry
+  ADMIN
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AccountHold {
+  NONE
+  NEW_ACCOUNT // hold on fresh accounts (anti-fraud)
+  MANUAL_REVIEW
+  SUSPENDED
+}
+
+enum CardCategory {
+  POKEMON
+  SPORTS
+  TCG
+  OTHER
+}
+
+enum Grader {
+  PSA
+  BGS
+  CGC
+  SGC
+  RAW
+  OTHER
+}
+
+// Vault lifecycle (spec §5). The gate hinges on these states.
+enum VaultItemState {
+  INTAKE // declared / inbound, not yet received
+  AUTHENTICATING // received, being authenticated
+  GRADED // authenticated + graded, ready to vault/mint
+  VAULTED // in vault, token may exist, tradeable
+  RESERVED // locked by an open order / pack / raffle
+  RELEASED // burned + shipped out; terminal, never re-listable
+}
+
+enum TokenStatus {
+  ACTIVE
+  BURNED // redeemed/claimed; immutable terminal state
+}
+
+enum SubmissionStatus {
+  DRAFT
+  LABEL_GENERATED
+  IN_TRANSIT
+  RECEIVED
+  AUTHENTICATING
+  GRADING
+  PHOTOGRAPHED
+  MINTED
+  REJECTED
+  CANCELLED
+}
+
+enum ListingType {
+  FIRST_PARTY
+  P2P
+}
+
+enum ListingStatus {
+  ACTIVE
+  HELD // auto-flagged (e.g. FMV deviation) pending review
+  SOLD
+  CANCELLED
+}
+
+enum PackStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  SOLD_OUT
+  ARCHIVED
+}
+
+enum PackOpeningStatus {
+  COMMITTED // serverSeedHash published, awaiting draw
+  DRAWN // VRF resolved, result assigned
+  REVEALED // serverSeed revealed, publicly verifiable
+  SETTLED // token transferred to user
+  FAILED
+}
+
+enum RaffleStatus {
+  DRAFT
+  ACTIVE
+  SOLD_OUT
+  DRAWING // VRF requested
+  DRAWN
+  SETTLED
+  CANCELLED // refunds issued
+}
+
+enum RaffleTicketStatus {
+  ACTIVE
+  WON
+  REFUNDED
+}
+
+enum BuybackQuoteStatus {
+  QUOTED
+  ACCEPTED
+  EXPIRED
+  PAID
+  CANCELLED
+}
+
+enum OrderType {
+  MARKETPLACE_BUY // first-party or P2P purchase
+  PACK_PURCHASE
+  RAFFLE_TICKET
+  BUYBACK_PAYOUT
+  CONSIGNMENT_PAYOUT
+  REFUND
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// Double-entry ledger primitives.
+enum LedgerAccountType {
+  TREASURY // platform-owned USDC float
+  FEE_REVENUE // marketplace fees collected
+  USER_WALLET // a user's settled balance
+  ESCROW // funds held mid-order (raffle pool, pending buy)
+  EXTERNAL // on/off-ramp counterparties (Coinflow, on-chain)
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+enum FmvSource {
+  MANUAL // ops override
+  TCGPLAYER
+  EBAY_SOLD
+  CARD_LADDER
+  PWCC
+  OTHER
+}
+
+// ----------------------------------------------------------------------------
+// Identity
+// ----------------------------------------------------------------------------
+
+model User {
+  id              String      @id @default(cuid())
+  // Privy identity (Phase 2). Wallet is the embedded/connected Solana wallet.
+  privyId         String?     @unique
+  email           String?     @unique
+  walletAddress   String?     @unique
+  displayName     String?
+  role            UserRole    @default(USER)
+  kycStatus       KycStatus   @default(NONE)
+  kycProviderRef  String?
+  hold            AccountHold @default(NEW_ACCOUNT)
+  reputationScore Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  ownedVaultItems VaultItem[]    @relation("VaultItemOwner")
+  ownedTokens     Token[]        @relation("TokenOwner")
+  submissions     Submission[]
+  listings        Listing[]      @relation("ListingSeller")
+  packOpenings    PackOpening[]
+  raffleTickets   RaffleTicket[]
+  wonRaffles      Raffle[]       @relation("RaffleWinner")
+  buybackQuotes   BuybackQuote[]
+  buyOrders       Order[]        @relation("OrderBuyer")
+  sellOrders      Order[]        @relation("OrderSeller")
+  ledgerEntries   LedgerEntry[]
+  auditLogs       AuditLog[]     @relation("AuditActor")
+
+  @@index([role])
+  @@index([kycStatus])
+}
+
+// ----------------------------------------------------------------------------
+// Physical inventory + custody
+// ----------------------------------------------------------------------------
+
+model PhysicalCard {
+  id          String       @id @default(cuid())
+  category    CardCategory
+  grader      Grader
+  // Grader certificate number; unique per grader. Verified during intake.
+  certNumber  String?
+  grade       String? // e.g. "10", "9.5", "PSA 10 GEM MT"
+  setName     String?
+  cardName    String
+  year        Int?
+  // Free-form structured attributes (variant, language, population, etc.)
+  attributes  Json         @default("{}")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  photos    CardPhoto[]
+  vaultItem VaultItem?
+  fmvSnapshots FmvSnapshot[]
+
+  @@unique([grader, certNumber])
+  @@index([category])
+  @@index([cardName])
+}
+
+model CardPhoto {
+  id             String       @id @default(cuid())
+  physicalCardId String
+  physicalCard   PhysicalCard @relation(fields: [physicalCardId], references: [id], onDelete: Cascade)
+  url            String
+  kind           String       @default("front") // front | back | slab | detail
+  createdAt      DateTime     @default(now())
+
+  @@index([physicalCardId])
+}
+
+// The custody record. 1:1 with PhysicalCard. Owner + state drive the gate.
+model VaultItem {
+  id             String         @id @default(cuid())
+  physicalCardId String         @unique
+  physicalCard   PhysicalCard   @relation(fields: [physicalCardId], references: [id], onDelete: Restrict)
+  ownerId        String
+  owner          User           @relation("VaultItemOwner", fields: [ownerId], references: [id])
+  state          VaultItemState @default(INTAKE)
+  vaultLocation  String? // physical shelf/bin reference
+  releasedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // 1:1 token (custody gate). Optional because the token is minted only at
+  // GRADED->VAULTED; a VaultItem may briefly exist pre-mint.
+  token       Token?
+  listings    Listing[]
+  submission  Submission?
+  packPoolItem PackPoolItem?
+  raffle      Raffle?
+  buybackQuotes BuybackQuote[]
+  fmvSnapshots FmvSnapshot[]
+
+  @@index([ownerId])
+  @@index([state])
+}
+
+// On-chain representation. Bubblegum compressed NFT. 1:1 with VaultItem.
+model Token {
+  id           String      @id @default(cuid())
+  vaultItemId  String      @unique
+  vaultItem    VaultItem   @relation(fields: [vaultItemId], references: [id], onDelete: Restrict)
+  // Helius DAS asset id for the cNFT.
+  cnftAssetId  String      @unique
+  merkleTree   String
+  leafIndex    Int
+  mintSignature String     @unique
+  metadataUri  String?
+  ownerId      String
+  owner        User        @relation("TokenOwner", fields: [ownerId], references: [id])
+  status       TokenStatus @default(ACTIVE)
+  burnSignature String?    @unique
+  burnedAt     DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+// ----------------------------------------------------------------------------
+// Consignment / submission
+// ----------------------------------------------------------------------------
+
+model Submission {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  status          SubmissionStatus @default(DRAFT)
+  // What the user declared they are shipping (pre-authentication).
+  declaredCard    Json             @default("{}")
+  shippingLabelUrl String?
+  trackingNumber  String?
+  // Set once the physical is received + vaulted; mint targets this owner.
+  vaultItemId     String?          @unique
+  vaultItem       VaultItem?       @relation(fields: [vaultItemId], references: [id])
+  rejectionReason String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  events SubmissionEvent[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Visible status timeline for the user (spec §6 "full status timeline").
+model SubmissionEvent {
+  id           String           @id @default(cuid())
+  submissionId String
+  submission   Submission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  status       SubmissionStatus
+  note         String?
+  createdAt    DateTime         @default(now())
+
+  @@index([submissionId])
+}
+
+// ----------------------------------------------------------------------------
+// Marketplace
+// ----------------------------------------------------------------------------
+
+model Listing {
+  id          String        @id @default(cuid())
+  vaultItemId String
+  vaultItem   VaultItem     @relation(fields: [vaultItemId], references: [id])
+  sellerId    String
+  seller      User          @relation("ListingSeller", fields: [sellerId], references: [id])
+  type        ListingType
+  priceUsdc   Decimal       @db.Decimal(18, 6)
+  // FMV bounds captured at listing time for anti-manipulation checks.
+  fmvLowUsdc  Decimal?      @db.Decimal(18, 6)
+  fmvHighUsdc Decimal?      @db.Decimal(18, 6)
+  status      ListingStatus @default(ACTIVE)
+  heldReason  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  orders Order[]
+
+  // Only one ACTIVE listing per vault item is allowed; enforced by a partial
+  // unique index created in the SQL migration.
+  @@index([vaultItemId])
+  @@index([status])
+  @@index([type])
+}
+
+// ----------------------------------------------------------------------------
+// Packs (provably-fair)
+// ----------------------------------------------------------------------------
+
+model Pack {
+  id             String     @id @default(cuid())
+  name           String
+  description    String?
+  priceUsdc      Decimal    @db.Decimal(18, 6)
+  // Tier/odds configuration; probabilities must sum to 1 (validated in app).
+  oddsConfig     Json       @default("{}")
+  status         PackStatus @default(DRAFT)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  poolItems PackPoolItem[]
+  openings  PackOpening[]
+
+  @@index([status])
+}
+
+// Eligible vaulted items in a pack's prize pool. Each references a VAULTED item.
+model PackPoolItem {
+  id          String    @id @default(cuid())
+  packId      String
+  pack        Pack      @relation(fields: [packId], references: [id], onDelete: Cascade)
+  vaultItemId String    @unique
+  vaultItem   VaultItem @relation(fields: [vaultItemId], references: [id])
+  tier        String? // maps to oddsConfig tier
+  consumed    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([packId])
+}
+
+model PackOpening {
+  id              String            @id @default(cuid())
+  packId          String
+  pack            Pack              @relation(fields: [packId], references: [id])
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  // Commit-reveal: hash published before, seed revealed after.
+  serverSeedHash  String
+  serverSeed      String?
+  clientSeed      String
+  nonce           Int               @default(0)
+  // VRF (ORAO/Switchboard) proof + on-chain request reference.
+  vrfRequest      String?
+  vrfProof        String?
+  resultVaultItemId String?         @unique
+  status          PackOpeningStatus @default(COMMITTED)
+  orderId         String?           @unique
+  createdAt       DateTime          @default(now())
+  revealedAt      DateTime?
+
+  @@index([packId])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// Raffles
+// ----------------------------------------------------------------------------
+
+model Raffle {
+  id             String       @id @default(cuid())
+  vaultItemId    String       @unique
+  vaultItem      VaultItem    @relation(fields: [vaultItemId], references: [id])
+  ticketSupply   Int
+  ticketsSold    Int          @default(0)
+  ticketPriceUsdc Decimal     @db.Decimal(18, 6)
+  status         RaffleStatus @default(DRAFT)
+  vrfRequest     String?
+  vrfProof       String?
+  winnerId       String?
+  winner         User?        @relation("RaffleWinner", fields: [winnerId], references: [id])
+  drawnAt        DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tickets RaffleTicket[]
+
+  @@index([status])
+}
+
+model RaffleTicket {
+  id           String             @id @default(cuid())
+  raffleId     String
+  raffle       Raffle             @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User               @relation(fields: [userId], references: [id])
+  ticketNumber Int
+  status       RaffleTicketStatus @default(ACTIVE)
+  orderId      String?            @unique
+  createdAt    DateTime           @default(now())
+
+  @@unique([raffleId, ticketNumber])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// Buyback
+// ----------------------------------------------------------------------------
+
+model BuybackQuote {
+  id            String             @id @default(cuid())
+  vaultItemId   String
+  vaultItem     VaultItem          @relation(fields: [vaultItemId], references: [id])
+  userId        String
+  user          User               @relation(fields: [userId], references: [id])
+  fmvSnapshotId String?
+  fmvSnapshot   FmvSnapshot?       @relation(fields: [fmvSnapshotId], references: [id])
+  percentBps    Int // e.g. 8750 = 87.5% of FMV
+  quoteUsdc     Decimal            @db.Decimal(18, 6)
+  status        BuybackQuoteStatus @default(QUOTED)
+  expiresAt     DateTime
+  orderId       String?            @unique
+  createdAt     DateTime           @default(now())
+
+  @@index([vaultItemId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ----------------------------------------------------------------------------
+// Orders + double-entry ledger
+// ----------------------------------------------------------------------------
+
+model Order {
+  id              String      @id @default(cuid())
+  type            OrderType
+  status          OrderStatus @default(PENDING)
+  buyerId         String?
+  buyer           User?       @relation("OrderBuyer", fields: [buyerId], references: [id])
+  sellerId        String?
+  seller          User?       @relation("OrderSeller", fields: [sellerId], references: [id])
+  listingId       String?
+  listing         Listing?    @relation(fields: [listingId], references: [id])
+  amountUsdc      Decimal     @db.Decimal(18, 6)
+  feeUsdc         Decimal     @default(0) @db.Decimal(18, 6)
+  // Idempotency: every money mutation carries a unique key so retries are safe.
+  idempotencyKey  String      @unique
+  // On-chain settlement signature, when applicable.
+  onchainSignature String?    @unique
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  ledgerEntries LedgerEntry[]
+
+  @@index([type])
+  @@index([status])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+// Double-entry ledger. Every Order's entries must net to zero (DEBITs ==
+// CREDITs); validated in app + by a deferred trigger added in migration.
+model LedgerEntry {
+  id          String            @id @default(cuid())
+  orderId     String
+  order       Order             @relation(fields: [orderId], references: [id])
+  accountType LedgerAccountType
+  // Optional owning user for USER_WALLET / per-user escrow rows.
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id])
+  direction   LedgerDirection
+  amountUsdc  Decimal           @db.Decimal(18, 6)
+  memo        String?
+  createdAt   DateTime          @default(now())
+
+  @@index([orderId])
+  @@index([accountType])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------
+// Pricing
+// ----------------------------------------------------------------------------
+
+model FmvSnapshot {
+  id             String        @id @default(cuid())
+  // FMV can be tracked at the card level (catalog) or a specific vault item.
+  physicalCardId String?
+  physicalCard   PhysicalCard? @relation(fields: [physicalCardId], references: [id])
+  vaultItemId    String?
+  vaultItem      VaultItem?    @relation(fields: [vaultItemId], references: [id])
+  source         FmvSource
+  valueUsdc      Decimal       @db.Decimal(18, 6)
+  capturedAt     DateTime      @default(now())
+
+  buybackQuotes BuybackQuote[]
+
+  @@index([physicalCardId])
+  @@index([vaultItemId])
+  @@index([source])
+}
+
+// ----------------------------------------------------------------------------
+// Audit
+// ----------------------------------------------------------------------------
+
+// Append-only audit log on every state transition / money path. No silent edits.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  entityType String // "VaultItem" | "Listing" | "Order" | ...
+  entityId   String
+  action     String // "STATE_TRANSITION" | "MINT" | "BURN" | "PAYOUT" | ...
+  fromState  String?
+  toState    String?
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([action])
+}

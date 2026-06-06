@@ -1,0 +1,32 @@
+{
+  "name": "boosters",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Boosters — phygital trading-card platform (devnet/sandbox only)",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "pnpm --filter @boosters/db generate",
+    "db:migrate": "pnpm --filter @boosters/db migrate",
+    "db:migrate:dev": "pnpm --filter @boosters/db migrate:dev",
+    "db:reset": "pnpm --filter @boosters/db reset",
+    "db:seed": "pnpm --filter @boosters/db seed",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.1.3",
+    "typescript": "^5.6.2"
+  }
+}
