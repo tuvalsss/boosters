@@ -107,6 +107,7 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
   const [price, setPrice] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [quote, setQuote] = useState<{ id: string; quoteUsdc: string } | null>(null);
   const card = holding.vaultItem.physicalCard;
 
   const list = async () => {
@@ -118,6 +119,37 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
         body: JSON.stringify({ vaultItemId: holding.vaultItem.id, priceUsdc: price }),
       });
       setPrice('');
+      onListed();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const buyback = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const q = await apiFetch<{ id: string; quoteUsdc: string }>('/buyback/quote', {
+        method: 'POST',
+        body: JSON.stringify({ vaultItemId: holding.vaultItem.id }),
+      });
+      setQuote(q);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const accept = async () => {
+    if (!quote) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await apiFetch(`/buyback/quotes/${quote.id}/accept`, { method: 'POST' });
+      setQuote(null);
       onListed();
     } catch (e) {
       setErr((e as Error).message);
@@ -138,7 +170,7 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
         <p className="text-xs text-white/45">
           {card.grader} {card.grade} · {holding.vaultItem.state}
         </p>
-        <div className="mt-2 flex gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <input
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -153,7 +185,30 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
           >
             {busy ? '…' : 'List'}
           </button>
+          <button
+            onClick={buyback}
+            disabled={busy}
+            className="h-8 rounded-lg border border-white/15 px-3 text-sm hover:bg-white/5 disabled:opacity-50"
+          >
+            Sell to vault
+          </button>
         </div>
+        {quote && (
+          <div className="mt-2 flex items-center gap-2 rounded-lg bg-white/5 px-2 py-1.5 text-xs">
+            <span>
+              Buyback offer:{' '}
+              <span className="font-semibold text-emerald-300">{usd(quote.quoteUsdc)}</span>
+            </span>
+            <button
+              onClick={accept}
+              disabled={busy}
+              className="rounded bg-emerald-400 px-2 py-0.5 font-semibold text-black disabled:opacity-50"
+            >
+              Accept
+            </button>
+            <span className="text-white/40">non-guaranteed</span>
+          </div>
+        )}
         {err && <p className="mt-1 text-xs text-red-300">{err}</p>}
       </div>
     </div>

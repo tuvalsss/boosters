@@ -132,6 +132,22 @@ Pack opening is verifiable by anyone (spec §6):
   activate. The won card's ownership moves to the user on reveal (on-chain
   reflected when signable).
 
+## Buyback (real, treasury-guarded)
+
+Instant sell-back to the vault at a configurable % of FMV (spec §6, §9):
+
+- **Quote**: `FMV × BUYBACK_DEFAULT_PERCENT_BPS` (default 87.5%), time-boxed
+  (10 min), explicitly **non-guaranteed**.
+- **Accept**: pays the user in USDC and returns the token to the custodial
+  treasury (re-listable as first-party). Double-entry ledgered.
+- **Hard guard (spec §9)**: a payout is refused if it would drain the treasury
+  below `BUYBACK_FLOAT_FLOOR_USDC`. Unit + integration tested.
+- **Pause flag**: admins can pause buyback at runtime (`Setting` table) — no
+  redeploy.
+- **Admin treasury panel** (`/admin/treasury`): balance, floor, available-for-
+  buyback, pause toggle, devnet treasury funding, and FMV entry.
+- **Portfolio**: a "Sell to vault" action quotes + accepts inline.
+
 ## Monorepo layout
 
 ```
@@ -234,9 +250,13 @@ HMAC-weighted draw, USDC payment, ownership move, transparent odds, an in-browse
 public verification page, and admin pack/pool management. Fairness unit-tested +
 open lifecycle integration-tested.
 
-**Next:** Phase 7 — Buyback: FMV quotes, treasury float floor (hard guard),
-USDC payouts, pause flag.
+**Phase 7 — Buyback: complete.** FMV quotes, time-boxed + non-guaranteed,
+double-entry USDC payouts, token return to treasury, runtime pause flag, and the
+treasury float-floor hard guard. Integration-tested (incl. the floor guard).
+
+**Next:** Phase 8 — Raffles + redeem/claim (VRF winner, ticket refunds; burn
+token → release vault item → shipping).
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.

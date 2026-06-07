@@ -584,6 +584,14 @@ model FmvSnapshot {
 // Audit
 // ----------------------------------------------------------------------------
 
+// Runtime platform settings / feature flags (e.g. buyback pause). Mutable by
+// admins; reads are cheap. Distinct from env config (which is deploy-time).
+model Setting {
+  key       String   @id
+  value     Json     @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
 // Append-only audit log on every state transition / money path. No silent edits.
 model AuditLog {
   id         String   @id @default(cuid())
