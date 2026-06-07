@@ -68,6 +68,13 @@ export const envSchema = z.object({
   // KYC provider. `manual` = real ops review via the admin panel (devnet
   // default). `veriff`/`sumsub` are gated behind ENABLE_REAL_KYC (Phase 10).
   KYC_PROVIDER: z.enum(['manual', 'veriff', 'sumsub']).default('manual'),
+  // Shared secret used to verify inbound KYC provider webhooks (HMAC).
+  KYC_WEBHOOK_SECRET: z.string().optional(),
+
+  // Payments: Coinflow (USDC on-ramp). Sandbox by default; gated by
+  // ENABLE_REAL_PAYMENTS for live. Webhooks are HMAC-verified with the API key.
+  COINFLOW_MERCHANT_ID: z.string().optional(),
+  COINFLOW_API_KEY: z.string().optional(),
 
   // Treasury / fees guardrails.
   BUYBACK_FLOAT_FLOOR_USDC: intFromEnv.default(1000),

@@ -1,5 +1,6 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import type { PrismaClient, User } from '@boosters/db';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { KycStatus, type PrismaClient, type User } from '@boosters/db';
 import type { Env } from '@boosters/config';
 import { ENV } from '../config/config.module.js';
 import { PRISMA } from '../prisma/prisma.module.js';
@@ -60,5 +61,42 @@ export class KycService {
           ? 'Your verification request has been submitted for manual review by our team.'
           : 'Continue verification with the provider flow.',
     };
+  }
+
+  /**
+   * Inbound KYC provider webhook (Veriff/Sumsub). HMAC-verified with
+   * KYC_WEBHOOK_SECRET. Sets the user's status from the provider decision.
+   * Gated behind ENABLE_REAL_KYC.
+   */
+  async handleWebhook(payload: { userId: string; status: string; signature: string }) {
+    if (!this.env.ENABLE_REAL_KYC) {
+      throw new BadRequestException('Real KYC is disabled');
+    }
+    if (this.env.KYC_WEBHOOK_SECRET) {
+      const expected = createHmac('sha256', this.env.KYC_WEBHOOK_SECRET)
+        .update(`${payload.userId}:${payload.status}`)
+        .digest('hex');
+      const ok =
+        payload.signature.length === expected.length &&
+        timingSafeEqual(Buffer.from(payload.signature), Buffer.from(expected));
+      if (!ok) throw new UnauthorizedException('Invalid KYC webhook signature');
+    }
+    const status = (Object.values(KycStatus) as string[]).includes(payload.status)
+      ? (payload.status as KycStatus)
+      : null;
+    if (!status) throw new BadRequestException('Unknown KYC status');
+
+    const user = await this.prisma.user.update({
+      where: { id: payload.userId },
+      data: { kycStatus: status },
+    });
+    await this.audit.log({
+      entityType: 'User',
+      entityId: user.id,
+      action: 'KYC_WEBHOOK',
+      toState: status,
+      metadata: { provider: this.env.KYC_PROVIDER },
+    });
+    return { status };
   }
 }

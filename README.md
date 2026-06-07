@@ -175,6 +175,20 @@ Beyond the custody gate (the primary defense), the platform layers:
 - **Reputation**: completed sales lift the seller's score.
 - **Audit log**: every state transition + money path is recorded (no silent edits).
 
+## Payments & KYC webhooks (Phase 10)
+
+- **USDC on-ramp** (`/payments`): creates a pending `DEPOSIT` order + a checkout
+  session. In **sandbox** the user confirms a simulated checkout (`/payments/
+sandbox/[ref]`); in **live** mode a **Coinflow webhook** (HMAC-verified with
+  `COINFLOW_API_KEY`) confirms. Either way the credit is a real double-entry
+  deposit — gated by `PAYMENTS_MODE` / `ENABLE_REAL_PAYMENTS`. "Add funds" lives
+  on the portfolio.
+- **KYC provider webhooks** (`POST /api/kyc/webhook`): HMAC-verified
+  (`KYC_WEBHOOK_SECRET`) inbound decisions from Veriff/Sumsub set the user's
+  status — gated by `ENABLE_REAL_KYC`.
+- Token metadata is self-hosted JSON today; moving it to Arweave/IPFS is the one
+  remaining optional polish item.
+
 ## Monorepo layout
 
 ```
@@ -289,9 +303,19 @@ release → shipping record + ops fulfilment). Integration-tested.
 FMV price-bound auto-hold + review queue, KYC-for-consignment + volume gating,
 Redis rate limits, and reputation scoring. Integration + unit tested.
 
-**Next:** Phase 10 — Payments (Coinflow sandbox on-ramp), real KYC providers
-(flagged), Arweave metadata, and test-coverage polish.
+**Phase 10 — Payments + KYC webhooks: complete.** USDC on-ramp (sandbox checkout
+
+- HMAC-verified Coinflow webhook for live), KYC provider webhooks (flagged), and
+  the portfolio "Add funds" flow. Integration-tested.
+
+### All 10 build phases complete. 77 tests green (lint/typecheck/test/build).
+
+**To go to production** (out of scope until you decide): a smart-contract /
+security audit before flipping `ENABLE_MAINNET` + `ENABLE_REAL_PAYMENTS`; real
+provider keys (Privy, Helius, Coinflow, Veriff/Sumsub, a funded mint authority);
+Dockerfiles + deploy/CD + secrets management; observability (Sentry, treasury
+alerts); Arweave/IPFS metadata; and broader e2e/load testing.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. **Raffles + redeem** ✅ · 9. **Anti-fraud + admin** ✅ · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. **Raffles + redeem** ✅ · 9. **Anti-fraud + admin** ✅ · 10. **Payments + KYC** ✅

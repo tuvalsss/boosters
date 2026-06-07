@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { usd } from '@/lib/api';
 import type { TokenHolding, WalletData } from '@/lib/types';
 
 export default function PortfolioPage() {
   const { ready, authenticated, login, apiFetch } = useAuth();
+  const router = useRouter();
   const [data, setData] = useState<WalletData | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -46,6 +48,30 @@ export default function PortfolioPage() {
         <div className="text-right">
           <p className="text-xs uppercase tracking-widest text-white/45">USDC balance</p>
           <p className="text-2xl font-bold text-emerald-300">{usd(data?.balanceUsdc ?? '0')}</p>
+          <button
+            onClick={async () => {
+              const amount = window.prompt('Add funds — amount in USDC:', '100');
+              if (!amount) return;
+              try {
+                const s = await apiFetch<{
+                  reference: string;
+                  provider: string;
+                  checkoutUrl: string;
+                }>('/payments/onramp', {
+                  method: 'POST',
+                  body: JSON.stringify({ amountUsdc: amount }),
+                });
+                if (s.provider === 'sandbox')
+                  router.push(`/payments/sandbox/${s.reference}?amount=${amount}`);
+                else window.location.href = s.checkoutUrl;
+              } catch (e) {
+                setErr((e as Error).message);
+              }
+            }}
+            className="mt-1 text-xs font-medium text-white/60 underline hover:text-white"
+          >
+            + Add funds
+          </button>
         </div>
       </div>
 

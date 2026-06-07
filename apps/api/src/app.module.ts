@@ -14,11 +14,12 @@ import { PacksModule } from './packs/packs.module.js';
 import { BuybackModule } from './buyback/buyback.module.js';
 import { RafflesModule } from './raffles/raffles.module.js';
 import { RedeemModule } from './redeem/redeem.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
- * Root module. Phase 8 adds raffles + redeem/claim on top of the Phase 7
- * foundation.
+ * Root module. Phase 10 adds the USDC on-ramp (Coinflow sandbox) on top of the
+ * full feature set.
  */
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { HealthController } from './health/health.controller.js';
     BuybackModule,
     RafflesModule,
     RedeemModule,
+    PaymentsModule,
   ],
   controllers: [HealthController],
 })
