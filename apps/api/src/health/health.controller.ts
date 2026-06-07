@@ -4,11 +4,15 @@ import type { Env } from '@boosters/config';
 import { isSafeMode } from '@boosters/config';
 import { ENV } from '../config/config.module.js';
 import { Public } from '../auth/auth.decorators.js';
+import { REDIS, type RedisLike } from '../ratelimit/rate-limit.service.js';
 
 @Controller('health')
 @Public()
 export class HealthController {
-  constructor(@Inject(ENV) private readonly env: Env) {}
+  constructor(
+    @Inject(ENV) private readonly env: Env,
+    @Inject(REDIS) private readonly redis: RedisLike & { ping?: () => Promise<string> },
+  ) {}
 
   /** Liveness — process is up. */
   @Get()
@@ -23,19 +27,23 @@ export class HealthController {
     };
   }
 
-  /** Readiness — dependencies (Postgres) reachable. */
+  /** Readiness — dependencies (Postgres, Redis) reachable. */
   @Get('ready')
   async ready() {
-    let database = 'down';
+    const database = await this.check(() => prisma.$queryRaw`SELECT 1`);
+    const redis = await this.check(
+      () => this.redis.ping?.() ?? Promise.reject(new Error('no ping')),
+    );
+    const ok = database === 'up' && redis === 'up';
+    return { status: ok ? 'ready' : 'degraded', checks: { database, redis } };
+  }
+
+  private async check(fn: () => Promise<unknown>): Promise<'up' | 'down'> {
     try {
-      await prisma.$queryRaw`SELECT 1`;
-      database = 'up';
+      await fn();
+      return 'up';
     } catch {
-      database = 'down';
+      return 'down';
     }
-    return {
-      status: database === 'up' ? 'ready' : 'degraded',
-      checks: { database },
-    };
   }
 }

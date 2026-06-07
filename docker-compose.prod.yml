@@ -1,0 +1,69 @@
+# Production-style stack (still DEVNET/SANDBOX until you flip the audit flags).
+# Provide a root .env first (see .env.example). Then:
+#   docker compose -f docker-compose.prod.yml up -d --build
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: boosters
+      POSTGRES_PASSWORD: boosters
+      POSTGRES_DB: boosters
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U boosters -d boosters']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: apply migrations before the apps start.
+  migrate:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    working_dir: /app
+    command: ['pnpm', '--filter', '@boosters/db', 'migrate']
+    env_file: [.env]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    env_file: [.env]
+    ports: ['4000:4000']
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: { context: ., dockerfile: apps/worker/Dockerfile }
+    restart: unless-stopped
+    env_file: [.env]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
+    env_file: [.env]
+    ports: ['3000:3000']
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:

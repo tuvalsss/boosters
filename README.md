@@ -308,7 +308,13 @@ Redis rate limits, and reputation scoring. Integration + unit tested.
 - HMAC-verified Coinflow webhook for live), KYC provider webhooks (flagged), and
   the portfolio "Add funds" flow. Integration-tested.
 
-### All 10 build phases complete. 77 tests green (lint/typecheck/test/build).
+### All 10 build phases complete + production hardening. 79 tests green.
+
+**Finalization pass:** real BullMQ worker (sweeps expired buyback quotes +
+abandoned on-ramps, treasury float alert — no more empty queues), API hardening
+(global exception filter, security headers, graceful shutdown, Postgres+Redis
+readiness), Dockerfiles + `docker-compose.prod.yml`, and a handoff guide
+(`SETUP.md`) listing exactly which keys to add.
 
 **To go to production** (out of scope until you decide): a smart-contract /
 security audit before flipping `ENABLE_MAINNET` + `ENABLE_REAL_PAYMENTS`; real
