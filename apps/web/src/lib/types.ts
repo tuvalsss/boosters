@@ -90,3 +90,44 @@ export interface WalletData {
   holdings: TokenHolding[];
   orders: OrderRow[];
 }
+
+export type SubmissionStatus =
+  | 'DRAFT'
+  | 'LABEL_GENERATED'
+  | 'IN_TRANSIT'
+  | 'RECEIVED'
+  | 'AUTHENTICATING'
+  | 'GRADING'
+  | 'PHOTOGRAPHED'
+  | 'MINTED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export interface SubmissionEvent {
+  id: string;
+  status: SubmissionStatus;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface Submission {
+  id: string;
+  status: SubmissionStatus;
+  declaredCard: {
+    cardName?: string;
+    category?: string;
+    grader?: string;
+    setName?: string;
+    certNumber?: string;
+    declaredGrade?: string;
+    notes?: string;
+  };
+  shippingLabelUrl: string | null;
+  trackingNumber: string | null;
+  vaultItemId: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  events: SubmissionEvent[];
+  user?: { id: string; email: string | null; walletAddress: string | null };
+  vaultItem?: { id: string; state: VaultState; token?: { cnftAssetId: string } | null } | null;
+}

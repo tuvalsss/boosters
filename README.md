@@ -99,6 +99,21 @@ RELEASED`, with illegal transitions rejected and every step audited.
 - **Portfolio** (`/portfolio`): USDC balance, holdings (with one-tap **List for
   sale**), and order history.
 
+## Submit / consignment (real)
+
+Users can ship in their own graded cards and get a 1:1 token minted to their
+wallet (spec §6). Reuses the vault state machine and writes a `SubmissionEvent`
+at every step so the user sees a full status timeline.
+
+- **User** (`/submit`): declare a card → generate prepaid-shipping instructions
+  - reference code → add tracking → watch the timeline. Cancel allowed until the
+    card is in processing.
+- **Ops** (`/admin/submissions`): receive (confirm the actual card, creates a
+  vault item owned by the **submitter**) → authenticate → grade → photograph →
+  **mint to the user** → tradeable. Reject with a reason at any point.
+- Once minted, the consigned token is immediately listable (P2P) on the
+  marketplace.
+
 ## Monorepo layout
 
 ```
@@ -191,9 +206,14 @@ balances, first-party & P2P listings (gate-enforced), USDC buy with 2% fee split
 - ownership move + idempotency, guarded on-chain settlement, and the
   marketplace/listing/portfolio screens. Money paths integration-tested.
 
-**Next:** Phase 5 — Submit/consignment: user-declared card → shipping label →
-intake worker → mint to the user → tradeable, with a full status timeline.
+**Phase 5 — Submit/consignment: complete.** Full declare → label → ship →
+receive → authenticate → grade → photograph → mint-to-user lifecycle with a
+user-visible status timeline and an ops processing queue. Lifecycle
+integration-tested.
+
+**Next:** Phase 6 — Provably-fair pack opening: commit-reveal + VRF + a public
+verification page, wired to the existing visual shuffler.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.

@@ -7,12 +7,12 @@ import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { VaultModule } from './vault/vault.module.js';
 import { MarketplaceModule } from './marketplace/marketplace.module.js';
+import { SubmissionsModule } from './submissions/submissions.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
- * Root module. Phase 4 adds the double-entry ledger + marketplace (listings,
- * USDC buy with 2% fee, ownership move, on-chain settlement) on top of the
- * Phase 3 vault/minting foundation.
+ * Root module. Phase 5 adds the consignment (submit) flow on top of the
+ * Phase 4 marketplace/ledger foundation.
  */
 @Module({
   imports: [
@@ -24,6 +24,7 @@ import { HealthController } from './health/health.controller.js';
     UsersModule,
     VaultModule,
     MarketplaceModule,
+    SubmissionsModule,
   ],
   controllers: [HealthController],
 })
