@@ -316,11 +316,80 @@ abandoned on-ramps, treasury float alert — no more empty queues), API hardenin
 readiness), Dockerfiles + `docker-compose.prod.yml`, and a handoff guide
 (`SETUP.md`) listing exactly which keys to add.
 
-**To go to production** (out of scope until you decide): a smart-contract /
-security audit before flipping `ENABLE_MAINNET` + `ENABLE_REAL_PAYMENTS`; real
-provider keys (Privy, Helius, Coinflow, Veriff/Sumsub, a funded mint authority);
-Dockerfiles + deploy/CD + secrets management; observability (Sentry, treasury
-alerts); Arweave/IPFS metadata; and broader e2e/load testing.
+## Costs & what you need to go live
+
+> Figures are **approximate ballparks (early 2026)** and free tiers/pricing
+> change — confirm with each provider. None of this is needed for local devnet
+> dev (all integrations have a free/sandbox tier). The exact keys go in `.env`
+> (see [`SETUP.md`](./SETUP.md)).
+
+### 1. What's missing to start
+
+The code is complete; to actually run it end-to-end you only add credentials:
+
+- **Privy** app id/secret (login + wallets) — without it, login is disabled.
+- **Helius** RPC/API key (Solana reads + on-chain transfers/burns).
+- **A funded Solana wallet** as the mint authority + a Merkle tree
+  (`node scripts/create-merkle-tree.mjs`).
+- **Coinflow** (only if you want card on-ramp) and **Veriff/Sumsub** (only if you
+  want automated KYC; the built-in `manual` ops review needs nothing).
+- A **Postgres** DB + **Redis** + somewhere to run web/api/worker.
+
+### 2. External services — monthly cost
+
+| Service                | Used for                | Free / sandbox              | Paid (approx)                                        | Model                   |
+| ---------------------- | ----------------------- | --------------------------- | ---------------------------------------------------- | ----------------------- |
+| **Privy**              | Auth + embedded wallets | ✅ up to ~1k MAU            | from ~$99/mo, scales with MAU                        | per monthly-active-user |
+| **Helius**             | Solana RPC + DAS        | ✅ limited credits          | ~$49–$99/mo dev tiers                                | credits / RPS tier      |
+| **Coinflow**           | USDC card on-ramp       | ✅ sandbox                  | per-transaction fee (~card rates); talk to sales     | % per transaction       |
+| **Veriff / Sumsub**    | Automated KYC           | trial                       | ~$1–$2 per verification (often a monthly min ~$100+) | per verification        |
+| **Cloudflare R2 / S3** | Card images             | ✅ R2 10 GB free, no egress | ~$0.015/GB-mo after                                  | storage + (S3) egress   |
+| **Solana network**     | cNFT mint/transfer/burn | devnet free                 | tx fees ~$0.0005 each; cNFTs are fractions of a cent | per transaction         |
+| **USDC**               | Settlement currency     | devnet free                 | only the Solana tx fee                               | —                       |
+
+cNFT economics: a depth-14 Bubblegum tree holds ~16k cards for a **one-time**
+rent of roughly **~0.5–1.5 SOL** (depends on canopy); each mint is a fraction of
+a cent. Keep a few SOL in the mint authority for headroom.
+
+### 3. Hosting — monthly cost (pick one)
+
+Five processes to run: **web** (Next.js), **api**, **worker**, **Postgres**,
+**Redis**.
+
+| Setup             | What                                                                          | Approx /mo          |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------- |
+| **Cheapest**      | 1 VPS (Hetzner/DO, 2 vCPU/4 GB) running `docker-compose.prod.yml`             | **~$12–$24**        |
+| **Managed PaaS**  | Railway/Render/Fly: api+worker+web containers + managed PG + Redis            | **~$25–$70**        |
+| **Split**         | Vercel for web ($0–$20) + Fly/Render for api/worker + Neon PG + Upstash Redis | **~$20–$60**        |
+| Domain            | name registration                                                             | ~$10–$15 / **year** |
+| TLS               | Let's Encrypt / platform                                                      | free                |
+| Sentry (optional) | error tracking                                                                | $0 free → ~$26      |
+
+**Realistic minimum to be live (small scale):** roughly **$25–$80/month** of
+infra + the per-use external fees above (Privy/Helius free tiers cover early
+usage; KYC/on-ramp only cost when used).
+
+### 4. One-time / pre-launch (before real money on mainnet)
+
+- **Security / smart-contract audit** — required before flipping
+  `ENABLE_MAINNET` + `ENABLE_REAL_PAYMENTS`. We build on the already-audited
+  Metaplex Bubblegum program, so the review focuses on the custody/ledger/
+  treasury logic; budget anywhere from **~$5k to $30k+** depending on scope.
+- **Legal/regulatory review** — phygital custody + buyback + raffles can trigger
+  money-transmission/securities/gambling considerations by jurisdiction. Get
+  counsel; the code deliberately avoids "guaranteed"/gambling language but is not
+  legal advice.
+- **Funded mainnet mint authority** — a few SOL for the tree + ongoing mints.
+
+### 5. TL;DR to get it in the air (devnet, free)
+
+1. `pnpm install && cp .env.example .env`
+2. Add Privy keys + a funded **devnet** wallet (`MINT_AUTHORITY_SECRET`), run the
+   tree script, paste `MERKLE_TREE_ADDRESS`.
+3. `docker compose -f docker-compose.prod.yml up -d --build` (or deploy each
+   image to your PaaS).
+4. Log in with your `ADMIN_BOOTSTRAP_EMAILS` address → build inventory in
+   `/admin/vault`. Real money/mainnet stay off until you finish an audit.
 
 ## Build order
 
