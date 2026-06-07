@@ -220,6 +220,7 @@ model User {
   sellOrders      Order[]        @relation("OrderSeller")
   ledgerEntries   LedgerEntry[]
   auditLogs       AuditLog[]     @relation("AuditActor")
+  redemptions     Redemption[]
 
   @@index([role])
   @@index([kycStatus])
@@ -286,9 +287,33 @@ model VaultItem {
   raffle      Raffle?
   buybackQuotes BuybackQuote[]
   fmvSnapshots FmvSnapshot[]
+  redemption  Redemption?
 
   @@index([ownerId])
   @@index([state])
+}
+
+enum RedemptionStatus {
+  REQUESTED // token burned, awaiting fulfilment
+  SHIPPED
+  DELIVERED
+}
+
+// Redeem/claim: burn the token, release the physical from the vault, ship it.
+model Redemption {
+  id              String           @id @default(cuid())
+  vaultItemId     String           @unique
+  vaultItem       VaultItem        @relation(fields: [vaultItemId], references: [id])
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+  status          RedemptionStatus @default(REQUESTED)
+  shippingAddress Json
+  trackingNumber  String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 // On-chain representation. Bubblegum compressed NFT. 1:1 with VaultItem.

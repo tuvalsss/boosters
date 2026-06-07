@@ -31,6 +31,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Packs', href: '/packs', icon: LayersIcon, badge: 'NEW' },
       { label: 'Pack Party', href: '/pack-party', icon: PartyIcon },
       { label: 'Marketplace', href: '/marketplace', icon: BagIcon },
+      { label: 'Raffles', href: '/raffles', icon: TrophyIcon },
       { label: 'Submit a card', href: '/submit', icon: GiftIcon },
       { label: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
     ],

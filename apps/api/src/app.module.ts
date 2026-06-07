@@ -11,11 +11,13 @@ import { MarketplaceModule } from './marketplace/marketplace.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
 import { PacksModule } from './packs/packs.module.js';
 import { BuybackModule } from './buyback/buyback.module.js';
+import { RafflesModule } from './raffles/raffles.module.js';
+import { RedeemModule } from './redeem/redeem.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
- * Root module. Phase 7 adds buyback (FMV quotes, treasury float floor guard,
- * USDC payouts, pause flag) on top of the Phase 6 foundation.
+ * Root module. Phase 8 adds raffles + redeem/claim on top of the Phase 7
+ * foundation.
  */
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { HealthController } from './health/health.controller.js';
     SubmissionsModule,
     PacksModule,
     BuybackModule,
+    RafflesModule,
+    RedeemModule,
   ],
   controllers: [HealthController],
 })

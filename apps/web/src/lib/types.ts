@@ -91,6 +91,27 @@ export interface WalletData {
   orders: OrderRow[];
 }
 
+export interface RaffleRow {
+  id: string;
+  ticketSupply: number;
+  ticketsSold: number;
+  ticketPriceUsdc: string;
+  status: 'DRAFT' | 'ACTIVE' | 'SOLD_OUT' | 'DRAWING' | 'DRAWN' | 'SETTLED' | 'CANCELLED';
+  winnerId: string | null;
+  vaultItem: { id: string; physicalCard: CardSummary };
+}
+
+export type RedemptionStatus = 'REQUESTED' | 'SHIPPED' | 'DELIVERED';
+
+export interface RedemptionRow {
+  id: string;
+  status: RedemptionStatus;
+  trackingNumber: string | null;
+  createdAt: string;
+  vaultItem: { id: string; physicalCard: CardSummary };
+  user?: { id: string; email: string | null };
+}
+
 export interface PackListItem {
   id: string;
   name: string;

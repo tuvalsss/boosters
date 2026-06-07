@@ -158,6 +158,28 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
     }
   };
 
+  const redeemCard = async () => {
+    const line1 = window.prompt('Shipping address (street):');
+    if (!line1) return;
+    const country = window.prompt('Country:', 'US') || 'US';
+    setBusy(true);
+    setErr(null);
+    try {
+      await apiFetch('/redeem', {
+        method: 'POST',
+        body: JSON.stringify({
+          vaultItemId: holding.vaultItem.id,
+          shippingAddress: { line1, country },
+        }),
+      });
+      onListed();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
       <div className="relative h-24 w-[68px] shrink-0 overflow-hidden rounded-lg bg-black/30">
@@ -191,6 +213,13 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
             className="h-8 rounded-lg border border-white/15 px-3 text-sm hover:bg-white/5 disabled:opacity-50"
           >
             Sell to vault
+          </button>
+          <button
+            onClick={redeemCard}
+            disabled={busy}
+            className="h-8 rounded-lg border border-white/15 px-3 text-sm hover:bg-white/5 disabled:opacity-50"
+          >
+            Redeem
           </button>
         </div>
         {quote && (

@@ -148,6 +148,17 @@ Instant sell-back to the vault at a configurable % of FMV (spec §6, §9):
   buyback, pause toggle, devnet treasury funding, and FMV entry.
 - **Portfolio**: a "Sell to vault" action quotes + accepts inline.
 
+## Raffles & redeem (real)
+
+- **Raffles** (`/raffles`): an owner lists a vaulted card (item goes RESERVED) →
+  users buy tickets (paid into escrow) → on sellout a provably-fair draw picks
+  the winner, transfers the card, and pays the seller proceeds (minus the 2%
+  fee). Cancelling before the draw refunds every ticket and releases the item.
+- **Redeem / claim** (`/redeem`): burns the token (irreversible — a burned token
+  can never be re-listed, enforced by the custody gate), releases the physical
+  from the vault (`VAULTED → RELEASED`), and opens a `Redemption` shipping record
+  the user can track. Ops fulfil + add tracking via `/admin/redemptions`.
+
 ## Monorepo layout
 
 ```
@@ -254,9 +265,13 @@ open lifecycle integration-tested.
 double-entry USDC payouts, token return to treasury, runtime pause flag, and the
 treasury float-floor hard guard. Integration-tested (incl. the floor guard).
 
-**Next:** Phase 8 — Raffles + redeem/claim (VRF winner, ticket refunds; burn
-token → release vault item → shipping).
+**Phase 8 — Raffles + redeem/claim: complete.** Raffles (reserve, ticket escrow,
+provably-fair draw + proceeds/fee, full refunds on cancel) and redeem (burn →
+release → shipping record + ops fulfilment). Integration-tested.
+
+**Next:** Phase 9 — Anti-fraud layer + admin/ops dashboard hardening (FMV price
+bounds, rate limits, reputation/holds, review queue).
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. **Raffles + redeem** ✅ · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
