@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { isStaff } from '@/lib/types';
 import { NAV_SECTIONS, type NavSection } from './nav-data';
-import { BagIcon, LayersIcon, TrophyIcon } from './icons';
+import { BagIcon, LayersIcon, SparkleIcon, TrophyIcon } from './icons';
 
 /** Shared navigation list — rendered in both the desktop rail and mobile drawer. */
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -17,6 +17,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     ? {
         title: 'Account',
         items: [
+          { label: 'Portfolio', href: '/portfolio', icon: SparkleIcon },
           { label: 'My Account', href: '/account', icon: BagIcon },
           ...(isStaff(dbUser?.role)
             ? [

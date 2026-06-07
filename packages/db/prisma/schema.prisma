@@ -153,6 +153,8 @@ enum OrderType {
   BUYBACK_PAYOUT
   CONSIGNMENT_PAYOUT
   REFUND
+  DEPOSIT // USDC on-ramp into custodial balance
+  WITHDRAWAL // USDC off-ramp out of custodial balance
 }
 
 enum OrderStatus {

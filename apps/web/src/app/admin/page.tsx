@@ -55,6 +55,20 @@ export default function AdminPage() {
     }
   };
 
+  const credit = async (id: string) => {
+    const amount = window.prompt('Credit USDC amount (devnet on-ramp):', '100');
+    if (!amount) return;
+    try {
+      await apiFetch('/wallet/credit', {
+        method: 'POST',
+        body: JSON.stringify({ userId: id, amountUsdc: amount }),
+      });
+      setErr(null);
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -90,6 +104,7 @@ export default function AdminPage() {
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">KYC</th>
               <th className="px-4 py-3 font-medium">Hold</th>
+              <th className="px-4 py-3 font-medium">Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -121,11 +136,19 @@ export default function AdminPage() {
                     onChange={(v) => patch(u.id, 'hold', { hold: v })}
                   />
                 </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => credit(u.id)}
+                    className="rounded-lg border border-white/15 px-2.5 py-1.5 text-xs hover:bg-white/5"
+                  >
+                    Credit USDC
+                  </button>
+                </td>
               </tr>
             ))}
             {!loading && users.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-white/40">
+                <td colSpan={5} className="px-4 py-8 text-center text-white/40">
                   No users found.
                 </td>
               </tr>

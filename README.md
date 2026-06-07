@@ -80,6 +80,25 @@ RELEASED`, with illegal transitions rejected and every step audited.
   `node scripts/create-merkle-tree.mjs`, paste the printed `MERKLE_TREE_ADDRESS`
   into `.env`. Until configured, vaulting fails with a clear error (no fake mint).
 
+## Marketplace & ledger (real money path)
+
+- **Double-entry ledger** is the authoritative money record. Every order's lines
+  must net to zero — enforced at COMMIT by the deferred `LedgerEntry_balanced`
+  trigger, so a mis-posted payment can never persist.
+- **Custodial USDC balances**: a user's balance = credits − debits on their
+  `USER_WALLET` rows. Devnet on-ramp via staff **Credit USDC** (admin panel);
+  real Coinflow on-ramp is Phase 10.
+- **Listings** (`/marketplace`): browse/filter/search active listings (public);
+  list an item you own (custody gate — VAULTED + active token only; one active
+  listing per item enforced by a DB partial unique index).
+- **Buy**: atomic order + ledger (2% fee split: buyer −price, seller +98%,
+  treasury fee), beneficial-ownership move, listing closed. **Idempotent** on a
+  caller key — retries never double-charge. cNFT ownership is reflected on-chain
+  via a guarded Bubblegum transferrer when a server-side signer is available;
+  otherwise DB ownership is authoritative and settlement is recorded as deferred.
+- **Portfolio** (`/portfolio`): USDC balance, holdings (with one-tap **List for
+  sale**), and order history.
+
 ## Monorepo layout
 
 ```
@@ -166,9 +185,15 @@ payments. **Per later phases:** on-chain USDC settlement, VRF, real
 pack/raffle/buyback logic, token burn/redeem, real KYC providers. The worker
 declares queues but registers no processors yet.
 
-**Next:** Phase 4 — Marketplace: first-party listings, browse/buy in USDC
-(devnet), 2% fee, double-entry ledger, on-chain transfer + DAS indexing.
+**Phase 4 — Marketplace: complete.** Double-entry ledger, custodial USDC
+balances, first-party & P2P listings (gate-enforced), USDC buy with 2% fee split
+
+- ownership move + idempotency, guarded on-chain settlement, and the
+  marketplace/listing/portfolio screens. Money paths integration-tested.
+
+**Next:** Phase 5 — Submit/consignment: user-declared card → shipping label →
+intake worker → mint to the user → tradeable, with a full status timeline.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. Marketplace · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
