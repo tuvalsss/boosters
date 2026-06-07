@@ -24,6 +24,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 { label: 'Admin', href: '/admin', icon: TrophyIcon },
                 { label: 'Vault', href: '/admin/vault', icon: LayersIcon },
                 { label: 'Submissions', href: '/admin/submissions', icon: BagIcon },
+                { label: 'Packs (admin)', href: '/admin/packs', icon: LayersIcon },
               ]
             : []),
         ],

@@ -114,6 +114,24 @@ at every step so the user sees a full status timeline.
 - Once minted, the consigned token is immediately listable (P2P) on the
   marketplace.
 
+## Provably-fair packs (real)
+
+Pack opening is verifiable by anyone (spec §6):
+
+- **Commit → reveal**: opening a pack fixes + hashes a server seed
+  (`sha256(serverSeed)` published) and charges USDC; reveal draws with the
+  committed seed + a client seed and **reveals the server seed**.
+- **Deterministic draw**: `float = HMAC_SHA256(serverSeed, "clientSeed:nonce")`
+  → weighted selection over the ordered candidate pool. The full reproducible
+  proof (algorithm, candidates+weights, entropy, index) is stored on the opening.
+- **Public verification** (`/verify/[id]`): recomputes the draw in-browser with
+  the Web Crypto API and checks `sha256(serverSeed)` against the commitment and
+  the recomputed winner against the recorded result.
+- **Transparent odds**: each pack page shows the live pool and per-card odds.
+- **Admin** (`/admin/packs`): create packs, add vaulted cards to the pool,
+  activate. The won card's ownership moves to the user on reveal (on-chain
+  reflected when signable).
+
 ## Monorepo layout
 
 ```
@@ -211,9 +229,14 @@ receive → authenticate → grade → photograph → mint-to-user lifecycle wit
 user-visible status timeline and an ops processing queue. Lifecycle
 integration-tested.
 
-**Next:** Phase 6 — Provably-fair pack opening: commit-reveal + VRF + a public
-verification page, wired to the existing visual shuffler.
+**Phase 6 — Provably-fair packs: complete.** Commit-reveal opening, deterministic
+HMAC-weighted draw, USDC payment, ownership move, transparent odds, an in-browser
+public verification page, and admin pack/pool management. Fairness unit-tested +
+open lifecycle integration-tested.
+
+**Next:** Phase 7 — Buyback: FMV quotes, treasury float floor (hard guard),
+USDC payouts, pause flag.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.

@@ -91,6 +91,55 @@ export interface WalletData {
   orders: OrderRow[];
 }
 
+export interface PackListItem {
+  id: string;
+  name: string;
+  priceUsdc: string;
+  status: string;
+  _count?: { poolItems: number };
+}
+
+export interface PackPoolEntry {
+  poolItemId: string;
+  tier: string | null;
+  consumed: boolean;
+  weight: number;
+  oddsPct: number;
+  card: { cardName: string; grader: string; grade: string | null; category: string };
+}
+
+export interface PackDetail {
+  id: string;
+  name: string;
+  priceUsdc: string;
+  status: string;
+  remaining: number;
+  pool: PackPoolEntry[];
+}
+
+export interface PackOpening {
+  id: string;
+  status: string;
+  serverSeedHash: string;
+  serverSeed: string | null;
+  clientSeed: string;
+  nonce: number;
+  resultVaultItemId: string | null;
+}
+
+export interface VerifyOpening extends PackOpening {
+  pack: { id: string; name: string } | null;
+  proof: {
+    algorithm?: string;
+    candidates?: { poolItemId: string; vaultItemId: string; weight: number }[];
+    floatHex?: string;
+    float?: number;
+    index?: number;
+  };
+  result: { id: string; physicalCard: CardSummary } | null;
+  revealedAt: string | null;
+}
+
 export type SubmissionStatus =
   | 'DRAFT'
   | 'LABEL_GENERATED'

@@ -430,6 +430,9 @@ model PackOpening {
   // VRF (ORAO/Switchboard) proof + on-chain request reference.
   vrfRequest      String?
   vrfProof        String?
+  // Reproducible draw record: { algorithm, candidates:[{poolItemId,vaultItemId,weight}],
+  // floatHex, float, index } so anyone can replay the result on the verify page.
+  proof           Json              @default("{}")
   resultVaultItemId String?         @unique
   status          PackOpeningStatus @default(COMMITTED)
   orderId         String?           @unique

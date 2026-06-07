@@ -8,11 +8,12 @@ import { UsersModule } from './users/users.module.js';
 import { VaultModule } from './vault/vault.module.js';
 import { MarketplaceModule } from './marketplace/marketplace.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
+import { PacksModule } from './packs/packs.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
- * Root module. Phase 5 adds the consignment (submit) flow on top of the
- * Phase 4 marketplace/ledger foundation.
+ * Root module. Phase 6 adds provably-fair pack opening on top of the
+ * Phase 5 consignment / marketplace foundation.
  */
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { HealthController } from './health/health.controller.js';
     VaultModule,
     MarketplaceModule,
     SubmissionsModule,
+    PacksModule,
   ],
   controllers: [HealthController],
 })
