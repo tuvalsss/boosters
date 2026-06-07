@@ -44,6 +44,16 @@ export const envSchema = z.object({
   HELIUS_API_KEY: z.string().optional(),
   HELIUS_RPC_URL: z.string().optional(),
 
+  // Metaplex Bubblegum (cNFT mint). Required at runtime to vault/mint; optional
+  // at schema level so non-minting work and tooling run without secrets.
+  // MINT_AUTHORITY_SECRET: base58 secret key OR JSON array of bytes.
+  MINT_AUTHORITY_SECRET: z.string().optional(),
+  MERKLE_TREE_ADDRESS: z.string().optional(),
+
+  // Publicly reachable base URL of the API (used to build token metadata URIs
+  // that the cNFT points at). Defaults to the local API.
+  PUBLIC_API_URL: z.string().default('http://localhost:4000'),
+
   // Auth: Privy. Required at runtime for auth to function; optional at the
   // schema level so build/typecheck/dev tooling work without secrets present.
   PRIVY_APP_ID: z.string().optional(),

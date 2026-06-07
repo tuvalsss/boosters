@@ -30,7 +30,7 @@ See `packages/db/prisma/schema.prisma` and the `*_custody_gate_guards` migration
 
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind, installable PWA, mobile-first.
 - **Backend:** NestJS (Fastify) + PostgreSQL (Prisma) + Redis (BullMQ workers).
-- **Blockchain:** Solana, Metaplex Bubblegum cNFTs, Helius DAS reads _(wired in Phase 3)._
+- **Blockchain:** Solana, Metaplex Bubblegum cNFTs (live), Helius DAS reads _(Phase 4)._
 - **Auth/wallets:** Privy (real) — email/Google/Apple + embedded & external Solana wallets.
 - **Payments:** Coinflow sandbox _(Phase 10)._ **Randomness:** Solana VRF + commit-reveal _(Phase 6)._
 
@@ -58,6 +58,27 @@ your email in `ADMIN_BOOTSTRAP_EMAILS` to be granted ADMIN on first login.
   waits for an ops decision — it never auto-approves. `veriff`/`sumsub` are gated
   behind `ENABLE_REAL_KYC` (Phase 10).
 - **Account** (`/account`): profile + wallet + KYC self-service.
+
+## Vault & minting (real, custody gate)
+
+The vault is the heart of the custody gate (spec §3). A tradeable cNFT is minted
+**only** at the internal `GRADED → VAULTED` transition — never from a user
+assertion or photo upload.
+
+- **State machine:** `INTAKE → AUTHENTICATING → GRADED → VAULTED → RESERVED →
+RELEASED`, with illegal transitions rejected and every step audited.
+- **Admin console** (`/admin/vault`): staff intake physical cards, start
+  authentication, enter the grade, then **Vault & mint**. The intake queue is
+  filterable by state.
+- **Minting:** real Metaplex **Bubblegum** compressed NFTs via Umi
+  (`BubblegumMinter`). Mints to the owner's Solana wallet; records the DAS asset
+  id, merkle tree, leaf index and signature. Idempotent — never double-mints
+  (guarded in code + by unique constraints).
+- **Token metadata:** served as real Metaplex-standard JSON from
+  `GET /api/metadata/vault/:id` (self-hosted; Arweave/IPFS is a Phase-10 polish).
+- **Setup:** fund a devnet keypair, set `MINT_AUTHORITY_SECRET`, run
+  `node scripts/create-merkle-tree.mjs`, paste the printed `MERKLE_TREE_ADDRESS`
+  into `.env`. Until configured, vaulting fails with a clear error (no fake mint).
 
 ## Monorepo layout
 
@@ -134,14 +155,20 @@ auth + roles guards, DB-backed user provisioning, profile/account, admin/ops
 console with audited role/KYC/hold changes, a real KYC status machine, and a
 single consolidated `.env`. Integration-tested against Postgres.
 
-**Gated until audit (not stubbed away — flag-protected):** mainnet and real
-payments. **Per later phases:** cNFT mint/burn, on-chain settlement, VRF, real
-pack/raffle/buyback logic, real KYC providers. The worker declares queues but
-registers no processors yet.
+**Phase 3 — Vault + cNFT minting: complete.** Vault state machine, admin
+intake/grading console, real Bubblegum cNFT minting wired to `GRADED → VAULTED`,
+self-hosted token metadata, and the custody gate enforced end-to-end
+(DB-integration tested: happy path, illegal transitions, idempotent mint,
+wallet/config preconditions).
 
-**Next:** Phase 3 — Vault state machine, admin intake/grading, and Bubblegum
-cNFT mint on devnet wired to `GRADED → VAULTED`.
+**Gated until audit (not stubbed away — flag-protected):** mainnet and real
+payments. **Per later phases:** on-chain USDC settlement, VRF, real
+pack/raffle/buyback logic, token burn/redeem, real KYC providers. The worker
+declares queues but registers no processors yet.
+
+**Next:** Phase 4 — Marketplace: first-party listings, browse/buy in USDC
+(devnet), 2% fee, double-entry ledger, on-chain transfer + DAS indexing.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. Vault + cNFT minting · 4. Marketplace · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. Marketplace · 5. Submit/consignment · 6. Provably-fair packs · 7. Buyback · 8. Raffles + redeem · 9. Anti-fraud + admin · 10. Payments + KYC + polish.

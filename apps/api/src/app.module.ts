@@ -4,15 +4,15 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
+import { VaultModule } from './vault/vault.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
- * Root module. Phase 2 adds real auth (Privy), RBAC and the users/admin/KYC
- * surface on top of the Phase 1 config + health foundation. Feature modules
- * (vault, marketplace, packs, raffles, buyback) arrive in later phases.
+ * Root module. Phase 3 adds the vault state machine + admin intake/grading +
+ * real Bubblegum cNFT minting (custody gate) on top of Phase 2 auth/RBAC.
  */
 @Module({
-  imports: [ConfigModule, PrismaModule, AuditModule, AuthModule, UsersModule],
+  imports: [ConfigModule, PrismaModule, AuditModule, AuthModule, UsersModule, VaultModule],
   controllers: [HealthController],
 })
 export class AppModule {}

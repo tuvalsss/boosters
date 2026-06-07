@@ -28,3 +28,26 @@ export interface AuditLogEntry {
 }
 
 export const isStaff = (role: UserRole | undefined): boolean => role === 'ADMIN' || role === 'OPS';
+
+export type VaultState =
+  | 'INTAKE'
+  | 'AUTHENTICATING'
+  | 'GRADED'
+  | 'VAULTED'
+  | 'RESERVED'
+  | 'RELEASED';
+
+export interface VaultItemRow {
+  id: string;
+  state: VaultState;
+  physicalCard: {
+    cardName: string;
+    category: string;
+    grader: string;
+    grade: string | null;
+    setName: string | null;
+    certNumber: string | null;
+  };
+  owner: { id: string; email: string | null; walletAddress: string | null };
+  token: { cnftAssetId: string; mintSignature: string } | null;
+}
