@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { SubmissionStatus, type User } from '@boosters/db';
 import { CurrentUser, Roles } from '../auth/auth.decorators.js';
+import { RateLimit, RateLimitGuard } from '../ratelimit/rate-limit.guard.js';
 import { SubmissionsService } from './submissions.service.js';
 import {
   CreateSubmissionDto,
@@ -17,6 +18,8 @@ export class SubmissionsController {
   constructor(private readonly submissions: SubmissionsService) {}
 
   @Post()
+  @UseGuards(RateLimitGuard)
+  @RateLimit('submission')
   create(@CurrentUser() user: User, @Body() dto: CreateSubmissionDto) {
     return this.submissions.create(user, dto);
   }

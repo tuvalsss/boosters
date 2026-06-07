@@ -159,6 +159,22 @@ Instant sell-back to the vault at a configurable % of FMV (spec §6, §9):
   from the vault (`VAULTED → RELEASED`), and opens a `Redemption` shipping record
   the user can track. Ops fulfil + add tracking via `/admin/redemptions`.
 
+## Anti-fraud layer (spec §7)
+
+Beyond the custody gate (the primary defense), the platform layers:
+
+- **Account holds**: new accounts start on a `NEW_ACCOUNT` hold; held accounts
+  can't list/sell/raffle until ops clear them.
+- **FMV price bounds**: listings priced beyond `LISTING_FMV_DEVIATION_BPS` from
+  FMV are auto-**HELD** and surfaced in the admin **review queue**
+  (`/admin/review`) for approve/reject.
+- **KYC gating**: required to consign, and required to keep listing once lifetime
+  sales pass `SELLER_KYC_VOLUME_USDC`.
+- **Rate limits**: per-account daily caps on listings/submissions, backed by
+  Redis (`RateLimitGuard`, fail-open on outage).
+- **Reputation**: completed sales lift the seller's score.
+- **Audit log**: every state transition + money path is recorded (no silent edits).
+
 ## Monorepo layout
 
 ```
@@ -269,9 +285,13 @@ treasury float-floor hard guard. Integration-tested (incl. the floor guard).
 provably-fair draw + proceeds/fee, full refunds on cancel) and redeem (burn →
 release → shipping record + ops fulfilment). Integration-tested.
 
-**Next:** Phase 9 — Anti-fraud layer + admin/ops dashboard hardening (FMV price
-bounds, rate limits, reputation/holds, review queue).
+**Phase 9 — Anti-fraud + admin hardening: complete.** Account-hold gating,
+FMV price-bound auto-hold + review queue, KYC-for-consignment + volume gating,
+Redis rate limits, and reputation scoring. Integration + unit tested.
+
+**Next:** Phase 10 — Payments (Coinflow sandbox on-ramp), real KYC providers
+(flagged), Arweave metadata, and test-coverage polish.
 
 ## Build order
 
-1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. **Raffles + redeem** ✅ · 9. Anti-fraud + admin · 10. Payments + KYC + polish.
+1. **Scaffold** ✅ · 2. **Auth + wallets** ✅ · 3. **Vault + cNFT minting** ✅ · 4. **Marketplace** ✅ · 5. **Submit/consignment** ✅ · 6. **Provably-fair packs** ✅ · 7. **Buyback** ✅ · 8. **Raffles + redeem** ✅ · 9. **Anti-fraud + admin** ✅ · 10. Payments + KYC + polish.

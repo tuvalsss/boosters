@@ -71,6 +71,9 @@ importers:
       fastify:
         specifier: ^4.28.1
         version: 4.29.1
+      ioredis:
+        specifier: ^5.4.1
+        version: 5.11.1
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { LedgerModule } from './ledger/ledger.module.js';
 import { SettingsModule } from './settings/settings.module.js';
+import { RateLimitModule } from './ratelimit/rate-limit.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { VaultModule } from './vault/vault.module.js';
@@ -26,6 +27,7 @@ import { HealthController } from './health/health.controller.js';
     AuditModule,
     LedgerModule,
     SettingsModule,
+    RateLimitModule,
     AuthModule,
     UsersModule,
     VaultModule,

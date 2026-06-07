@@ -76,6 +76,8 @@ export const envSchema = z.object({
 
   // Anti-fraud limits.
   LISTING_FMV_DEVIATION_BPS: intFromEnv.default(2500),
+  // Lifetime sales (USDC) above which a seller must be KYC-approved to list.
+  SELLER_KYC_VOLUME_USDC: intFromEnv.default(1000),
   RATE_LIMIT_LISTINGS_PER_DAY: intFromEnv.default(25),
   RATE_LIMIT_SUBMISSIONS_PER_DAY: intFromEnv.default(10),
 });

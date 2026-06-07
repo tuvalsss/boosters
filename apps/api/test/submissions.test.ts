@@ -35,6 +35,7 @@ async function makeUser(role: 'USER' | 'OPS' = 'USER'): Promise<User> {
       email: `u_${randomUUID()}@phase5.test`,
       role,
       hold: 'NONE',
+      kycStatus: 'APPROVED', // consignment requires KYC (spec §7)
       walletAddress: `W_${randomUUID()}`,
     },
   });

@@ -28,6 +28,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 { label: 'Packs (admin)', href: '/admin/packs', icon: LayersIcon },
                 { label: 'Treasury', href: '/admin/treasury', icon: TrophyIcon },
                 { label: 'Redemptions', href: '/admin/redemptions', icon: GiftIcon },
+                { label: 'Review queue', href: '/admin/review', icon: SparkleIcon },
               ]
             : []),
         ],

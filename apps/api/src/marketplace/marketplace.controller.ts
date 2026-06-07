@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import type { User } from '@boosters/db';
 import { CurrentUser, Public, Roles } from '../auth/auth.decorators.js';
+import { RateLimit, RateLimitGuard } from '../ratelimit/rate-limit.guard.js';
 import { MarketplaceService } from './marketplace.service.js';
 import { BrowseQueryDto, BuyDto, CreateListingDto, CreditBalanceDto } from './marketplace.dto.js';
 
@@ -23,6 +24,8 @@ export class MarketplaceController {
 
   /** Create a listing for an item you own (custody gate: VAULTED + active token). */
   @Post('listings')
+  @UseGuards(RateLimitGuard)
+  @RateLimit('listing')
   createListing(@CurrentUser() user: User, @Body() dto: CreateListingDto) {
     return this.marketplace.createListing(user, dto.vaultItemId, dto.priceUsdc);
   }
@@ -36,6 +39,28 @@ export class MarketplaceController {
   @Post('listings/:id/buy')
   buy(@CurrentUser() user: User, @Param('id') id: string, @Body() dto: BuyDto) {
     return this.marketplace.buy(user, id, dto.idempotencyKey);
+  }
+}
+
+@Controller('admin/review')
+@Roles('ADMIN', 'OPS')
+export class AdminReviewController {
+  constructor(private readonly marketplace: MarketplaceService) {}
+
+  /** Listings auto-held for FMV deviation, awaiting manual review. */
+  @Get('listings')
+  held() {
+    return this.marketplace.listHeld();
+  }
+
+  @Post('listings/:id/approve')
+  approve(@CurrentUser() actor: User, @Param('id') id: string) {
+    return this.marketplace.reviewListing(actor, id, true);
+  }
+
+  @Post('listings/:id/reject')
+  reject(@CurrentUser() actor: User, @Param('id') id: string) {
+    return this.marketplace.reviewListing(actor, id, false);
   }
 }
 

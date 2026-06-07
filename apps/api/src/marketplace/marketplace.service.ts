@@ -33,7 +33,10 @@ export class MarketplaceService {
   async createListing(seller: User, vaultItemId: string, priceUsdc: string) {
     const price = new Prisma.Decimal(priceUsdc);
     if (price.lte(0)) throw new BadRequestException('Price must be greater than zero');
-    if (seller.hold === 'SUSPENDED') throw new ForbiddenException('Account suspended');
+    // Anti-fraud (spec §7): account holds block selling until ops clear them.
+    if (seller.hold !== 'NONE') {
+      throw new ForbiddenException(`Account is on hold (${seller.hold}) and cannot list`);
+    }
 
     const item = await this.prisma.vaultItem.findUnique({
       where: { id: vaultItemId },
@@ -46,11 +49,34 @@ export class MarketplaceService {
       throw new BadRequestException('Item is not a vaulted, active token');
     }
 
+    // KYC required for higher-volume sellers (spec §7).
+    if (seller.kycStatus !== 'APPROVED') {
+      const sold = await this.prisma.order.aggregate({
+        where: { sellerId: seller.id, type: 'MARKETPLACE_BUY', status: 'COMPLETED' },
+        _sum: { amountUsdc: true },
+      });
+      const volume = sold._sum.amountUsdc ?? new Prisma.Decimal(0);
+      if (volume.gte(this.env.SELLER_KYC_VOLUME_USDC)) {
+        throw new ForbiddenException('KYC verification is required to keep selling at this volume');
+      }
+    }
+
     const type = seller.role === 'ADMIN' || seller.role === 'OPS' ? 'FIRST_PARTY' : 'P2P';
     const fmv = await this.prisma.fmvSnapshot.findFirst({
       where: { OR: [{ vaultItemId }, { physicalCardId: item.physicalCardId }] },
       orderBy: { capturedAt: 'desc' },
     });
+
+    // Anti-manipulation: auto-HOLD listings priced far from FMV for review.
+    let status: 'ACTIVE' | 'HELD' = 'ACTIVE';
+    let heldReason: string | null = null;
+    if (fmv && fmv.valueUsdc.gt(0)) {
+      const deviationBps = price.sub(fmv.valueUsdc).abs().div(fmv.valueUsdc).mul(10000);
+      if (deviationBps.gt(this.env.LISTING_FMV_DEVIATION_BPS)) {
+        status = 'HELD';
+        heldReason = `Price deviates ${deviationBps.toFixed(0)}bps from FMV ${fmv.valueUsdc.toString()}`;
+      }
+    }
 
     try {
       const listing = await this.prisma.listing.create({
@@ -61,15 +87,16 @@ export class MarketplaceService {
           priceUsdc: price,
           fmvLowUsdc: fmv?.valueUsdc ?? null,
           fmvHighUsdc: fmv?.valueUsdc ?? null,
-          status: 'ACTIVE',
+          status,
+          heldReason,
         },
       });
       await this.audit.log({
         actorId: seller.id,
         entityType: 'Listing',
         entityId: listing.id,
-        action: 'LISTING_CREATED',
-        metadata: { vaultItemId, priceUsdc, type },
+        action: status === 'HELD' ? 'LISTING_HELD' : 'LISTING_CREATED',
+        metadata: { vaultItemId, priceUsdc, type, heldReason },
       });
       return listing;
     } catch (err) {
@@ -78,6 +105,39 @@ export class MarketplaceService {
       }
       throw err;
     }
+  }
+
+  // ---- Review queue (anti-fraud) -------------------------------------------
+
+  async listHeld() {
+    return this.prisma.listing.findMany({
+      where: { status: 'HELD' },
+      include: {
+        vaultItem: { include: { physicalCard: true } },
+        seller: { select: { id: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async reviewListing(actor: User, listingId: string, approve: boolean) {
+    const listing = await this.prisma.listing.findUnique({ where: { id: listingId } });
+    if (!listing) throw new NotFoundException('Listing not found');
+    if (listing.status !== 'HELD') throw new BadRequestException('Listing is not held');
+    const next = approve ? 'ACTIVE' : 'CANCELLED';
+    const updated = await this.prisma.listing.update({
+      where: { id: listingId },
+      data: { status: next, heldReason: approve ? null : listing.heldReason },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'Listing',
+      entityId: listingId,
+      action: approve ? 'LISTING_APPROVED' : 'LISTING_REJECTED',
+      fromState: 'HELD',
+      toState: next,
+    });
+    return updated;
   }
 
   async cancelListing(actor: User, listingId: string) {
@@ -224,6 +284,11 @@ export class MarketplaceService {
       await tx.listing.update({ where: { id: listingId }, data: { status: 'SOLD' } });
       await tx.token.update({ where: { id: tokenId }, data: { ownerId: buyer.id } });
       await tx.vaultItem.update({ where: { id: item.id }, data: { ownerId: buyer.id } });
+      // Reputation: a completed sale lifts the seller's score (anti-Sybil signal).
+      await tx.user.update({
+        where: { id: sellerId },
+        data: { reputationScore: { increment: 1 } },
+      });
 
       return created;
     });
