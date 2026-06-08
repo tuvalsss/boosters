@@ -27,6 +27,7 @@ logs/
 npm-debug.log*
 pnpm-debug.log*
 verification-screenshots/
+uploads/
 
 # Test / coverage
 coverage/

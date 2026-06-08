@@ -1,5 +1,5 @@
 // Anti-fraud tests (spec §7): FMV price-bound auto-hold + review, account-hold
-// gating, KYC-for-consignment, and the rate limiter (with a fake Redis).
+// gating and the rate limiter (with a fake Redis).
 
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
@@ -138,12 +138,15 @@ describe('listing anti-fraud', () => {
   });
 });
 
-describe('KYC for consignment', () => {
-  it('blocks submission creation without approved KYC', async () => {
+describe('consignment intake', () => {
+  it('allows submission creation without KYC because KYC is withdrawal-only for now', async () => {
     const user = await makeUser({ kycStatus: 'NONE' });
-    await expect(
-      submissions.create(user, { category: 'POKEMON', grader: 'PSA', cardName: 'X' }),
-    ).rejects.toThrow(/KYC/i);
+    const created = await submissions.create(user, {
+      category: 'POKEMON',
+      grader: 'PSA',
+      cardName: 'X',
+    });
+    expect(created.status).toBe('DRAFT');
   });
 });
 

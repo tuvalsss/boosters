@@ -1,0 +1,18 @@
+<svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="70" y1="60" x2="530" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9f5ff"/>
+      <stop offset="0.35" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#101828"/>
+    </linearGradient>
+  </defs>
+  <rect x="62" y="36" width="476" height="828" rx="32" fill="url(#g)"/>
+  <rect x="94" y="76" width="412" height="748" rx="26" fill="#06111f" fill-opacity=".28" stroke="white" stroke-opacity=".28" stroke-width="4"/>
+  <path d="M120 268H480L448 600H152L120 268Z" fill="white" fill-opacity=".13"/>
+  <path d="M170 328H430L408 540H192L170 328Z" fill="#d9f5ff" fill-opacity=".95"/>
+  <path d="M212 390H388M230 452H370" stroke="#1f4f88" stroke-width="22" stroke-linecap="round"/>
+  <text x="300" y="142" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">BOOSTERS</text>
+  <text x="300" y="662" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="900">SILVER PACK</text>
+  <text x="300" y="724" text-anchor="middle" fill="#e6f8ff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">MID TIER</text>
+  <path d="M96 792H504" stroke="white" stroke-opacity=".28" stroke-width="4"/>
+</svg>

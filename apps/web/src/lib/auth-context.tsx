@@ -27,6 +27,8 @@ export interface AuthState {
   refreshMe: () => Promise<void>;
   /** Authenticated fetch against the API; attaches the Privy access token. */
   apiFetch: <T = unknown>(path: string, init?: RequestInit) => Promise<T>;
+  /** Authenticated raw fetch for binary/private files. */
+  apiRawFetch: (path: string, init?: RequestInit) => Promise<Response>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -62,6 +64,25 @@ export function PrivyAuthBridge({ children }: { children: ReactNode }) {
     [getAccessToken],
   );
 
+  const apiRawFetch = useCallback(
+    async (path: string, init: RequestInit = {}): Promise<Response> => {
+      const token = await getAccessToken();
+      const res = await fetch(`${API_URL}/api${path}`, {
+        ...init,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(init.headers ?? {}),
+        },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { message?: string }).message ?? `Request failed (${res.status})`);
+      }
+      return res;
+    },
+    [getAccessToken],
+  );
+
   const refreshMe = useCallback(async () => {
     if (!authenticated) {
       setDbUser(null);
@@ -88,8 +109,9 @@ export function PrivyAuthBridge({ children }: { children: ReactNode }) {
       dbUser,
       refreshMe,
       apiFetch,
+      apiRawFetch,
     }),
-    [ready, authenticated, login, logout, dbUser, refreshMe, apiFetch],
+    [ready, authenticated, login, logout, dbUser, refreshMe, apiFetch, apiRawFetch],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -110,6 +132,9 @@ export function UnconfiguredAuthBridge({ children }: { children: ReactNode }) {
       dbUser: null,
       refreshMe: async () => {},
       apiFetch: async () => {
+        throw new Error('Auth not configured');
+      },
+      apiRawFetch: async () => {
         throw new Error('Auth not configured');
       },
     }),

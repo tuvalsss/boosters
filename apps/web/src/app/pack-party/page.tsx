@@ -6,9 +6,9 @@ import { PartyIcon } from '@/components/icons';
 export const metadata = { title: 'Pack Party · Boosters' };
 
 const ROOMS = [
-  { name: 'Saturday Grails', viewers: 128, status: 'Live', branch: 'pokemon' },
-  { name: 'Courtside Chase', viewers: 84, status: 'Opening', branch: 'nba' },
-  { name: 'Rookie Vault', viewers: 57, status: 'Queued', branch: 'nfl' },
+  { name: 'Saturday Grails', viewers: 128, status: 'Live', branch: 'creature' },
+  { name: 'Gold Chase', viewers: 84, status: 'Opening', branch: 'legend' },
+  { name: 'Rookie Vault', viewers: 57, status: 'Queued', branch: 'sports' },
 ];
 
 export default function PackPartyPage() {

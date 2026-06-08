@@ -2,6 +2,15 @@
 
 export type UserRole = 'USER' | 'OPS' | 'ADMIN';
 export type KycStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED';
+export type KycIdentityDocumentType = 'ID_CARD' | 'DRIVERS_LICENSE' | 'PASSPORT';
+export type KycDocumentType =
+  | 'ID_FRONT'
+  | 'ID_BACK'
+  | 'DRIVERS_LICENSE_FRONT'
+  | 'DRIVERS_LICENSE_BACK'
+  | 'PASSPORT'
+  | 'SELFIE'
+  | 'PROOF_OF_ADDRESS';
 export type AccountHold = 'NONE' | 'NEW_ACCOUNT' | 'MANUAL_REVIEW' | 'SUSPENDED';
 
 export interface PublicUser {
@@ -82,6 +91,7 @@ export interface OrderRow {
   status: string;
   amountUsdc: string;
   feeUsdc: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -115,6 +125,11 @@ export interface RedemptionRow {
 export interface PackListItem {
   id: string;
   name: string;
+  description: string | null;
+  brandLabel: string;
+  coverImageUrl: string | null;
+  accentColor: string;
+  tier: string;
   priceUsdc: string;
   status: string;
   _count?: { poolItems: number };
@@ -132,6 +147,11 @@ export interface PackPoolEntry {
 export interface PackDetail {
   id: string;
   name: string;
+  description: string | null;
+  brandLabel: string;
+  coverImageUrl: string | null;
+  accentColor: string;
+  tier: string;
   priceUsdc: string;
   status: string;
   remaining: number;
@@ -200,4 +220,41 @@ export interface Submission {
   events: SubmissionEvent[];
   user?: { id: string; email: string | null; walletAddress: string | null };
   vaultItem?: { id: string; state: VaultState; token?: { cnftAssetId: string } | null } | null;
+}
+
+export interface KycDocument {
+  id: string;
+  type: KycDocumentType;
+  fileName: string;
+  contentType: string;
+  checksumSha256: string;
+  createdAt: string;
+}
+
+export interface KycSubmission {
+  id: string;
+  userId: string;
+  user?: {
+    id: string;
+    email: string | null;
+    walletAddress: string | null;
+    displayName?: string | null;
+  };
+  status: KycStatus;
+  documentType: KycIdentityDocumentType;
+  legalName: string;
+  country: string;
+  notes: string | null;
+  reviewerNotes: string | null;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  documents: KycDocument[];
+}
+
+export interface KycStatusResponse {
+  status: KycStatus;
+  provider: string;
+  submission: KycSubmission | null;
 }

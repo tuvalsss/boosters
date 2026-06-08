@@ -4,21 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { LOCALE_LABELS, LOCALES, useI18n, type Locale } from '@/i18n/language-context';
 import { Logo } from './brand';
 import { SidebarNav } from './sidebar-nav';
 import { ArrowLeftIcon, CloseIcon, HelpIcon, LoginIcon, MenuIcon } from './icons';
 
-/**
- * Responsive application shell.
- *  - Desktop (lg+): persistent left sidebar rail + sticky top bar.
- *  - Mobile: compact top bar with a hamburger that opens a slide-in drawer
- *    (mirrors the reference menu).
- */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useI18n();
 
-  // Close the drawer on route change and lock body scroll while open.
   useEffect(() => setDrawerOpen(false), [pathname]);
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : '';
@@ -29,7 +24,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[18rem_1fr]">
-      {/* ---- Desktop sidebar rail ---- */}
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-white/10 bg-black/40 px-4 py-5 lg:flex">
         <div className="px-2 pb-6">
           <Logo />
@@ -38,30 +32,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarNav />
         </div>
         <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-[11px] leading-relaxed text-white/45">
-          Devnet · sandbox. No real funds or payments.
+          {t('shell.sandbox')}
         </div>
       </aside>
 
-      {/* ---- Main column ---- */}
       <div className="flex min-h-screen flex-col">
         <TopBar onMenu={() => setDrawerOpen(true)} />
         <main className="flex-1">{children}</main>
       </div>
 
-      {/* ---- Mobile drawer ---- */}
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }
 
 function TopBar({ onMenu }: { onMenu: () => void }) {
+  const { t } = useI18n();
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-booster-dark/80 px-4 py-3 backdrop-blur lg:px-8">
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onMenu}
-          aria-label="Open menu"
+          aria-label={t('shell.openMenu')}
           className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white lg:hidden"
         >
           <MenuIcon />
@@ -74,11 +67,12 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          aria-label="Help"
+          aria-label={t('common.help')}
           className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80 hover:text-white sm:flex"
         >
           <HelpIcon />
         </button>
+        <LanguageSelect />
         <AuthControls />
       </div>
     </header>
@@ -87,13 +81,14 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
 
 function AuthControls() {
   const { ready, authenticated, login, logout, dbUser } = useAuth();
+  const { t } = useI18n();
 
   if (!ready) {
     return <div className="h-10 w-24 animate-pulse rounded-xl bg-white/5" aria-hidden />;
   }
 
   if (authenticated) {
-    const label = dbUser?.displayName || dbUser?.email || 'Account';
+    const label = dbUser?.displayName || dbUser?.email || t('shell.account');
     return (
       <div className="flex items-center gap-2">
         <Link
@@ -109,7 +104,7 @@ function AuthControls() {
           onClick={logout}
           className="flex h-10 items-center rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/70 hover:text-white"
         >
-          Logout
+          {t('common.logout')}
         </button>
       </div>
     );
@@ -123,20 +118,39 @@ function AuthControls() {
         className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 text-sm font-medium text-white/90 hover:bg-white/10"
       >
         <LoginIcon />
-        <span>Login</span>
+        <span>{t('common.login')}</span>
       </button>
       <button
         type="button"
         onClick={login}
         className="flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-black hover:bg-white/90"
       >
-        Sign Up
+        {t('common.signUp')}
       </button>
     </>
   );
 }
 
+function LanguageSelect() {
+  const { locale, setLocale } = useI18n();
+  return (
+    <select
+      value={locale}
+      aria-label="Language"
+      onChange={(e) => setLocale(e.target.value as Locale)}
+      className="h-10 rounded-xl border border-white/10 bg-white/5 px-2 text-xs font-medium text-white/80 outline-none hover:bg-white/10 focus:border-white/30"
+    >
+      {LOCALES.map((l) => (
+        <option key={l} value={l} className="bg-booster-dark">
+          {LOCALE_LABELS[l]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
   return (
     <div
       className={['fixed inset-0 z-50 lg:hidden', open ? '' : 'pointer-events-none'].join(' ')}
@@ -162,7 +176,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close menu"
+            aria-label={t('common.close')}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-white/70 hover:text-white"
           >
             <ArrowLeftIcon />
@@ -176,7 +190,7 @@ function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => void })
           onClick={onClose}
           className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm text-white/70"
         >
-          <CloseIcon /> Close
+          <CloseIcon /> {t('common.close')}
         </button>
       </div>
     </div>

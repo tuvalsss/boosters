@@ -1,0 +1,18 @@
+<svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="90" y1="50" x2="520" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1fbf75"/>
+      <stop offset="0.48" stop-color="#0f8f9d"/>
+      <stop offset="1" stop-color="#101724"/>
+    </linearGradient>
+  </defs>
+  <rect x="62" y="36" width="476" height="828" rx="32" fill="url(#g)"/>
+  <rect x="92" y="74" width="416" height="752" rx="24" stroke="white" stroke-opacity=".26" stroke-width="4"/>
+  <path d="M126 178C210 118 397 115 476 176L436 242C373 203 229 201 164 242L126 178Z" fill="white" fill-opacity=".18"/>
+  <circle cx="300" cy="422" r="132" fill="#ffffff" fill-opacity=".12"/>
+  <path d="M300 274L335 377L444 378L356 442L389 548L300 485L211 548L244 442L156 378L265 377L300 274Z" fill="#fff7c2"/>
+  <text x="300" y="142" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800">BOOSTERS</text>
+  <text x="300" y="662" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="900">ROOKIE PACK</text>
+  <text x="300" y="724" text-anchor="middle" fill="#d4fff0" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">CORE VALUE</text>
+  <path d="M96 792H504" stroke="white" stroke-opacity=".28" stroke-width="4"/>
+</svg>

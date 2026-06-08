@@ -2,17 +2,19 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Inject,
   Param,
   Post,
+  Query,
   UnauthorizedException,
 } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { IsString, Matches } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import type { User } from '@boosters/db';
 import type { Env } from '@boosters/config';
 import { ENV } from '../config/config.module.js';
-import { CurrentUser, Public } from '../auth/auth.decorators.js';
+import { CurrentUser, Public, Roles } from '../auth/auth.decorators.js';
 import { PaymentsService } from './payments.service.js';
 
 const MONEY = /^\d+(\.\d{1,6})?$/;
@@ -21,11 +23,29 @@ class OnrampDto {
   @Matches(MONEY)
   amountUsdc!: string;
 }
+class WithdrawalDto {
+  @Matches(MONEY)
+  amountUsdc!: string;
+
+  @IsString()
+  @MaxLength(40)
+  destinationType!: string;
+
+  @IsString()
+  @MaxLength(240)
+  destination!: string;
+}
 class WebhookDto {
   @IsString()
   reference!: string;
   @IsString()
   signature!: string;
+}
+class FailWithdrawalDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 @Controller('payments')
@@ -39,6 +59,17 @@ export class PaymentsController {
   @Post('onramp')
   onramp(@CurrentUser() user: User, @Body() dto: OnrampDto) {
     return this.payments.createOnramp(user, dto.amountUsdc);
+  }
+
+  /** Request a money-out withdrawal. Requires APPROVED KYC. */
+  @Post('withdrawals')
+  withdrawal(@CurrentUser() user: User, @Body() dto: WithdrawalDto) {
+    return this.payments.requestWithdrawal(
+      user,
+      dto.amountUsdc,
+      dto.destinationType,
+      dto.destination,
+    );
   }
 
   /** Sandbox only: simulate a successful payment for your own pending deposit. */
@@ -63,5 +94,30 @@ export class PaymentsController {
       if (!ok) throw new UnauthorizedException('Invalid webhook signature');
     }
     return this.payments.confirm(dto.reference);
+  }
+}
+
+@Controller('admin/payments')
+@Roles('ADMIN', 'OPS')
+export class AdminPaymentsController {
+  constructor(private readonly payments: PaymentsService) {}
+
+  @Get('withdrawals')
+  withdrawals() {
+    return this.payments.listWithdrawals();
+  }
+
+  @Post('withdrawals/:id/complete')
+  complete(
+    @CurrentUser() actor: User,
+    @Param('id') id: string,
+    @Query('signature') signature?: string,
+  ) {
+    return this.payments.completeWithdrawal(actor, id, signature);
+  }
+
+  @Post('withdrawals/:id/fail')
+  fail(@CurrentUser() actor: User, @Param('id') id: string, @Body() dto: FailWithdrawalDto) {
+    return this.payments.failWithdrawal(actor, id, dto.reason);
   }
 }

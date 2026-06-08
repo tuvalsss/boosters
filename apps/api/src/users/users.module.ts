@@ -3,10 +3,10 @@ import { UsersService } from './users.service.js';
 import { UsersController } from './users.controller.js';
 import { AdminController } from './admin.controller.js';
 import { KycService } from '../kyc/kyc.service.js';
-import { KycController } from '../kyc/kyc.controller.js';
+import { AdminKycController, KycController } from '../kyc/kyc.controller.js';
 
 @Module({
-  controllers: [UsersController, AdminController, KycController],
+  controllers: [UsersController, AdminController, KycController, AdminKycController],
   providers: [UsersService, KycService],
   exports: [UsersService],
 })

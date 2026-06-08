@@ -1,9 +1,15 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import type { User } from '@boosters/db';
 import { CurrentUser, Public, Roles } from '../auth/auth.decorators.js';
 // (Get is used by both public and admin controllers below)
 import { PacksService } from './packs.service.js';
-import { AddPoolItemDto, CreatePackDto, OpenPackDto, RevealDto } from './packs.dto.js';
+import {
+  AddPoolItemDto,
+  CreatePackDto,
+  OpenPackDto,
+  RevealDto,
+  UpdatePackVisualDto,
+} from './packs.dto.js';
 
 @Controller('packs')
 export class PacksController {
@@ -52,7 +58,16 @@ export class AdminPacksController {
 
   @Post()
   create(@CurrentUser() actor: User, @Body() dto: CreatePackDto) {
-    return this.packs.createPack(actor, dto.name, dto.priceUsdc, dto.weights);
+    return this.packs.createPack(actor, dto.name, dto.priceUsdc, dto.weights, dto);
+  }
+
+  @Patch(':id/visual')
+  updateVisual(
+    @CurrentUser() actor: User,
+    @Param('id') id: string,
+    @Body() dto: UpdatePackVisualDto,
+  ) {
+    return this.packs.updateVisual(actor, id, dto);
   }
 
   @Post(':id/pool')

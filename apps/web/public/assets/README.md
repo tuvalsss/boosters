@@ -1,31 +1,16 @@
-# Asset folder
+# Asset Folder
 
-Organized, predictable placeholders. **Replace any file with a real PNG of the
-same name and path** — the UI picks it up automatically, no code change needed.
+Production-safe default visuals live in:
 
-```
+```text
 assets/
-├── packs/            booster-pack artwork, 600×900 portrait
-│   ├── pokemon.png
-│   ├── onepiece.png
-│   ├── yugioh.png
-│   ├── nfl.png
-│   ├── nba.png
-│   └── tcg.png
-└── cards/            graded-slab card artwork, 500×700
-    ├── pokemon-1.png  pokemon-2.png
-    ├── onepiece-1.png onepiece-2.png
-    ├── yugioh-1.png   yugioh-2.png
-    ├── nfl-1.png      nfl-2.png
-    ├── nba-1.png      nba-2.png
-    └── tcg-1.png      tcg-2.png
+  brand-packs/   Original Boosters pack artwork
+  brand-cards/   Original Boosters graded-card artwork
 ```
 
-The current files are auto-generated placeholders. Regenerate them anytime with:
+The legacy `packs/` and `cards/` PNG folders are kept only for backward
+compatibility with older branches. Current UI defaults use original Boosters
+assets and pack-specific `coverImageUrl` values from the admin pack editor.
 
-```
-node scripts/generate-placeholder-assets.mjs
-```
-
-To add a new branch: add it to `BRANCHES` in that script **and** in
-`apps/web/src/lib/branches.ts`.
+For third-party pack themes, upload or reference licensed artwork in the admin
+panel instead of committing unlicensed logos, characters, or brand art.

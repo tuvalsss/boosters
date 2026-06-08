@@ -70,6 +70,8 @@ export const envSchema = z.object({
   KYC_PROVIDER: z.enum(['manual', 'veriff', 'sumsub']).default('manual'),
   // Shared secret used to verify inbound KYC provider webhooks (HMAC).
   KYC_WEBHOOK_SECRET: z.string().optional(),
+  // Local/manual KYC document storage. Relative paths resolve from the API cwd.
+  KYC_UPLOAD_DIR: z.string().default('uploads/kyc'),
 
   // Payments: Coinflow (USDC on-ramp). Sandbox by default; gated by
   // ENABLE_REAL_PAYMENTS for live. Webhooks are HMAC-verified with the API key.

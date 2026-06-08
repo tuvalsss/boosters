@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { PrivyAuthBridge, UnconfiguredAuthBridge } from '@/lib/auth-context';
+import { LanguageProvider } from '@/i18n/language-context';
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? '';
 
@@ -15,28 +16,34 @@ const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? '';
  */
 export function Providers({ children }: { children: ReactNode }) {
   if (!PRIVY_APP_ID) {
-    return <UnconfiguredAuthBridge>{children}</UnconfiguredAuthBridge>;
+    return (
+      <LanguageProvider>
+        <UnconfiguredAuthBridge>{children}</UnconfiguredAuthBridge>
+      </LanguageProvider>
+    );
   }
 
   return (
-    <PrivyProvider
-      appId={PRIVY_APP_ID}
-      config={{
-        loginMethods: ['email', 'google', 'apple', 'wallet'],
-        appearance: {
-          theme: 'dark',
-          accentColor: '#6d28d9',
-          walletChainType: 'solana-only',
-        },
-        embeddedWallets: {
-          solana: { createOnLogin: 'users-without-wallets' },
-        },
-        externalWallets: {
-          solana: { connectors: toSolanaWalletConnectors() },
-        },
-      }}
-    >
-      <PrivyAuthBridge>{children}</PrivyAuthBridge>
-    </PrivyProvider>
+    <LanguageProvider>
+      <PrivyProvider
+        appId={PRIVY_APP_ID}
+        config={{
+          loginMethods: ['email', 'google', 'apple', 'wallet'],
+          appearance: {
+            theme: 'dark',
+            accentColor: '#6d28d9',
+            walletChainType: 'solana-only',
+          },
+          embeddedWallets: {
+            solana: { createOnLogin: 'users-without-wallets' },
+          },
+          externalWallets: {
+            solana: { connectors: toSolanaWalletConnectors() },
+          },
+        }}
+      >
+        <PrivyAuthBridge>{children}</PrivyAuthBridge>
+      </PrivyProvider>
+    </LanguageProvider>
   );
 }

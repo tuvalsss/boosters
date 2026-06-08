@@ -43,6 +43,22 @@ enum KycStatus {
   REJECTED
 }
 
+enum KycIdentityDocumentType {
+  ID_CARD
+  DRIVERS_LICENSE
+  PASSPORT
+}
+
+enum KycDocumentType {
+  ID_FRONT
+  ID_BACK
+  DRIVERS_LICENSE_FRONT
+  DRIVERS_LICENSE_BACK
+  PASSPORT
+  SELFIE
+  PROOF_OF_ADDRESS
+}
+
 enum AccountHold {
   NONE
   NEW_ACCOUNT // hold on fresh accounts (anti-fraud)
@@ -221,9 +237,47 @@ model User {
   ledgerEntries   LedgerEntry[]
   auditLogs       AuditLog[]     @relation("AuditActor")
   redemptions     Redemption[]
+  kycSubmissions  KycSubmission[]
 
   @@index([role])
   @@index([kycStatus])
+}
+
+model KycSubmission {
+  id             String                  @id @default(cuid())
+  userId         String
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         KycStatus               @default(PENDING)
+  documentType   KycIdentityDocumentType
+  legalName      String
+  country        String
+  notes          String?
+  reviewerNotes  String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  documents KycDocument[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([reviewedAt])
+}
+
+model KycDocument {
+  id            String          @id @default(cuid())
+  submissionId  String
+  submission    KycSubmission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  type          KycDocumentType
+  fileName      String
+  contentType   String
+  storageKey    String
+  checksumSha256 String
+  createdAt     DateTime        @default(now())
+
+  @@index([submissionId])
+  @@index([type])
 }
 
 // ----------------------------------------------------------------------------
@@ -415,6 +469,10 @@ model Pack {
   name           String
   description    String?
   priceUsdc      Decimal    @db.Decimal(18, 6)
+  brandLabel     String     @default("BOOSTERS")
+  coverImageUrl  String?
+  accentColor    String     @default("#22c55e")
+  tier           String     @default("CORE")
   // Tier/odds configuration; probabilities must sum to 1 (validated in app).
   oddsConfig     Json       @default("{}")
   status         PackStatus @default(DRAFT)
@@ -552,6 +610,7 @@ model Order {
   idempotencyKey  String      @unique
   // On-chain settlement signature, when applicable.
   onchainSignature String?    @unique
+  metadata        Json        @default("{}")
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

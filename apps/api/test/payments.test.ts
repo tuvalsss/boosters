@@ -18,9 +18,9 @@ const env = loadEnv({
 } as NodeJS.ProcessEnv);
 const payments = new PaymentsService(prisma, env, ledger, audit);
 
-async function makeUser(): Promise<User> {
+async function makeUser(over: Partial<User> = {}): Promise<User> {
   return prisma.user.create({
-    data: { email: `u_${randomUUID()}@phase10.test`, role: 'USER', hold: 'NONE' },
+    data: { email: `u_${randomUUID()}@phase10.test`, role: 'USER', hold: 'NONE', ...over },
   });
 }
 async function cleanup() {
@@ -66,5 +66,28 @@ describe('on-ramp', () => {
     const b = await makeUser();
     const session = await payments.createOnramp(a, '50');
     await expect(payments.confirm(session.reference, b)).rejects.toThrow(/not your/i);
+  });
+});
+
+describe('withdrawals', () => {
+  it('allows deposits without KYC but blocks withdrawals until KYC is approved', async () => {
+    const user = await makeUser({ kycStatus: 'NONE' });
+    const session = await payments.createOnramp(user, '40');
+    await payments.confirm(session.reference, user);
+    expect((await ledger.balanceOf(user.id)).toString()).toBe('40');
+
+    await expect(payments.requestWithdrawal(user, '10', 'USDC_WALLET', 'Wallet1')).rejects.toThrow(
+      /KYC/i,
+    );
+  });
+
+  it('creates a processing withdrawal and debits the custodial balance after KYC approval', async () => {
+    const user = await makeUser({ kycStatus: 'APPROVED' });
+    const session = await payments.createOnramp(user, '40');
+    await payments.confirm(session.reference, user);
+
+    const withdrawal = await payments.requestWithdrawal(user, '15', 'USDC_WALLET', 'Wallet1');
+    expect(withdrawal.status).toBe('PROCESSING');
+    expect((await ledger.balanceOf(user.id)).toString()).toBe('25');
   });
 });

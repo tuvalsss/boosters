@@ -8,12 +8,14 @@ import { publicFetch, usd } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { BRANCHES } from '@/lib/branches';
 import type { PackDetail, PackOpening, VerifyOpening } from '@/lib/types';
+import { useI18n } from '@/i18n/language-context';
 
 type Phase = 'idle' | 'opening' | 'done';
 
 export default function PackDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { authenticated, login, apiFetch, refreshMe } = useAuth();
+  const { t } = useI18n();
   const [pack, setPack] = useState<PackDetail | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
   const [won, setWon] = useState<VerifyOpening | null>(null);
@@ -35,7 +37,8 @@ export default function PackDetailPage() {
   if (err) return <Center>{err}</Center>;
   if (!pack) return <Center>Loading…</Center>;
 
-  const packImage = BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!.packImage;
+  const packImage =
+    pack.coverImageUrl ?? BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!.packImage;
 
   const open = async () => {
     if (!authenticated) return login();
@@ -80,6 +83,7 @@ export default function PackDetailPage() {
           <Image src={packImage} alt={pack.name} fill className="object-contain drop-shadow-2xl" />
         </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight">{pack.name}</h1>
+        {pack.description && <p className="mt-2 max-w-lg text-white/55">{pack.description}</p>}
         <p className="text-white/55">
           {pack.remaining} cards left · {usd(pack.priceUsdc)}
         </p>
@@ -93,10 +97,10 @@ export default function PackDetailPage() {
             {phase === 'opening'
               ? 'Opening…'
               : pack.remaining === 0
-                ? 'Sold out'
+                ? t('packs.soldOut')
                 : authenticated
-                  ? `Open for ${usd(pack.priceUsdc)}`
-                  : 'Login to open'}
+                  ? `${t('packs.openFor')} ${usd(pack.priceUsdc)}`
+                  : t('packs.loginToOpen')}
           </button>
         )}
         {err && <p className="mt-4 text-sm text-red-300">{err}</p>}

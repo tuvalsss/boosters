@@ -65,10 +65,6 @@ export class SubmissionsService {
   // ---- User-facing ----------------------------------------------------------
 
   async create(user: User, dto: CreateSubmissionDto): Promise<Submission> {
-    // KYC is required for consignment (spec §7).
-    if (user.kycStatus !== 'APPROVED') {
-      throw new ForbiddenException('Identity verification (KYC) is required to consign a card');
-    }
     const submission = await this.prisma.submission.create({
       data: {
         userId: user.id,

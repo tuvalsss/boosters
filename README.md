@@ -247,12 +247,12 @@ The web app ships a responsive shell modeled on the product references:
 - **Branch pages** (`/branch/[key]`) per category, plus Activity, Pack Party,
   Leaderboard, and Refer screens so the primary navigation has real surfaces.
 
-### Swappable image assets
+### Production pack assets
 
-Placeholder artwork lives in `apps/web/public/assets/` organized by branch
-(`packs/<branch>.png`, `cards/<branch>-N.png`). **Drop a real PNG with the same
-name to replace it** — no code change needed. Regenerate placeholders with
-`node scripts/generate-placeholder-assets.mjs`. See the folder's README.
+Original Boosters artwork lives in `apps/web/public/assets/brand-packs/` and
+`apps/web/public/assets/brand-cards/`. Pack visuals are configurable from the
+admin pack editor with `coverImageUrl`, `brandLabel`, `accentColor`, and `tier`,
+so licensed third-party art can be attached without code changes.
 
 ## Build status
 

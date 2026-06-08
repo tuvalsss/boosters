@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { usd } from '@/lib/api';
 import type { TokenHolding, WalletData } from '@/lib/types';
+import { useI18n } from '@/i18n/language-context';
 
 export default function PortfolioPage() {
   const { ready, authenticated, login, apiFetch } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [data, setData] = useState<WalletData | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function PortfolioPage() {
     if (authenticated) void load();
   }, [authenticated, load]);
 
-  if (!ready) return <Center>Loading…</Center>;
+  if (!ready) return <Center>{t('common.loading')}</Center>;
   if (!authenticated) {
     return (
       <Center>
@@ -35,52 +37,87 @@ export default function PortfolioPage() {
           onClick={login}
           className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black"
         >
-          Login
+          {t('common.login')}
         </button>
       </Center>
     );
   }
 
+  const addFunds = async () => {
+    const amount = window.prompt('Add funds - amount in USDC:', '100');
+    if (!amount) return;
+    try {
+      const session = await apiFetch<{
+        reference: string;
+        provider: string;
+        checkoutUrl: string;
+      }>('/payments/onramp', {
+        method: 'POST',
+        body: JSON.stringify({ amountUsdc: amount }),
+      });
+      if (session.provider === 'sandbox') {
+        router.push(`/payments/sandbox/${session.reference}?amount=${amount}`);
+      } else {
+        window.location.href = session.checkoutUrl;
+      }
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  };
+
+  const withdraw = async () => {
+    const amountUsdc = window.prompt(t('portfolio.withdrawAmount'), '25');
+    if (!amountUsdc) return;
+    const destination = window.prompt(t('portfolio.withdrawDestination'));
+    if (!destination) return;
+    try {
+      await apiFetch('/payments/withdrawals', {
+        method: 'POST',
+        body: JSON.stringify({
+          amountUsdc,
+          destinationType: 'USDC_WALLET',
+          destination,
+        }),
+      });
+      setErr(t('portfolio.withdrawRequested'));
+      await load();
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 lg:px-8">
       <div className="flex items-end justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Portfolio</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('portfolio.title')}</h1>
         <div className="text-right">
-          <p className="text-xs uppercase tracking-widest text-white/45">USDC balance</p>
+          <p className="text-xs uppercase tracking-widest text-white/45">
+            {t('portfolio.balance')}
+          </p>
           <p className="text-2xl font-bold text-emerald-300">{usd(data?.balanceUsdc ?? '0')}</p>
-          <button
-            onClick={async () => {
-              const amount = window.prompt('Add funds — amount in USDC:', '100');
-              if (!amount) return;
-              try {
-                const s = await apiFetch<{
-                  reference: string;
-                  provider: string;
-                  checkoutUrl: string;
-                }>('/payments/onramp', {
-                  method: 'POST',
-                  body: JSON.stringify({ amountUsdc: amount }),
-                });
-                if (s.provider === 'sandbox')
-                  router.push(`/payments/sandbox/${s.reference}?amount=${amount}`);
-                else window.location.href = s.checkoutUrl;
-              } catch (e) {
-                setErr((e as Error).message);
-              }
-            }}
-            className="mt-1 text-xs font-medium text-white/60 underline hover:text-white"
-          >
-            + Add funds
-          </button>
+          <div className="mt-1 flex justify-end gap-3">
+            <button
+              onClick={addFunds}
+              className="text-xs font-medium text-white/60 underline hover:text-white"
+            >
+              + {t('portfolio.addFunds')}
+            </button>
+            <button
+              onClick={withdraw}
+              className="text-xs font-medium text-white/60 underline hover:text-white"
+            >
+              {t('portfolio.withdraw')}
+            </button>
+          </div>
         </div>
       </div>
 
       {err && <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-2 text-sm text-red-300">{err}</p>}
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Holdings</h2>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">{t('portfolio.holdings')}</h2>
       {data && data.holdings.length === 0 ? (
         <p className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-8 text-center text-white/40">
-          No cards yet. Browse the marketplace to start your collection.
+          {t('portfolio.noCards')}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -90,7 +127,7 @@ export default function PortfolioPage() {
         </div>
       )}
 
-      <h2 className="mb-3 mt-10 text-lg font-semibold">History</h2>
+      <h2 className="mb-3 mt-10 text-lg font-semibold">{t('portfolio.history')}</h2>
       <div className="overflow-x-auto rounded-2xl border border-white/10">
         <table className="w-full min-w-[520px] text-sm">
           <thead className="bg-white/5 text-left text-white/50">
@@ -117,7 +154,7 @@ export default function PortfolioPage() {
             {data && data.orders.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-6 text-center text-white/40">
-                  No transactions yet.
+                  {t('portfolio.noTransactions')}
                 </td>
               </tr>
             )}
@@ -231,7 +268,7 @@ function HoldingCard({ holding, onListed }: { holding: TokenHolding; onListed: (
             disabled={busy || !price}
             className="h-8 rounded-lg bg-white px-3 text-sm font-semibold text-black disabled:opacity-50"
           >
-            {busy ? '…' : 'List'}
+            {busy ? '...' : 'List'}
           </button>
           <button
             onClick={buyback}

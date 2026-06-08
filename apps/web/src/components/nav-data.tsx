@@ -12,44 +12,43 @@ import {
 
 export interface NavItem {
   label: string;
+  labelKey?: string;
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   badge?: string;
 }
 
 export interface NavSection {
-  /** Section heading; omitted for the primary block. */
   title?: string;
   items: NavItem[];
 }
 
-// Mirrors the reference mobile menu; reused for the desktop sidebar.
 export const NAV_SECTIONS: NavSection[] = [
   {
     items: [
-      { label: 'Home', href: '/', icon: HomeIcon },
-      { label: 'Packs', href: '/packs', icon: LayersIcon, badge: 'NEW' },
-      { label: 'Pack Party', href: '/pack-party', icon: PartyIcon },
-      { label: 'Marketplace', href: '/marketplace', icon: BagIcon },
-      { label: 'Raffles', href: '/raffles', icon: TrophyIcon },
-      { label: 'Submit a card', href: '/submit', icon: GiftIcon },
-      { label: 'Leaderboard', href: '/leaderboard', icon: TrophyIcon },
+      { label: 'Home', labelKey: 'nav.home', href: '/', icon: HomeIcon },
+      { label: 'Packs', labelKey: 'nav.packs', href: '/packs', icon: LayersIcon, badge: 'NEW' },
+      { label: 'Pack Party', labelKey: 'nav.packParty', href: '/pack-party', icon: PartyIcon },
+      { label: 'Marketplace', labelKey: 'nav.marketplace', href: '/marketplace', icon: BagIcon },
+      { label: 'Raffles', labelKey: 'nav.raffles', href: '/raffles', icon: TrophyIcon },
+      { label: 'Submit a card', labelKey: 'nav.submit', href: '/submit', icon: GiftIcon },
+      { label: 'Leaderboard', labelKey: 'nav.leaderboard', href: '/leaderboard', icon: TrophyIcon },
     ],
   },
   {
     title: 'Community',
     items: [
-      { label: 'Activity', href: '/activity', icon: ClockIcon },
-      { label: 'Refer & Earn', href: '/refer', icon: GiftIcon },
+      { label: 'Activity', labelKey: 'nav.activity', href: '/activity', icon: ClockIcon },
+      { label: 'Refer & Earn', labelKey: 'nav.refer', href: '/refer', icon: GiftIcon },
     ],
   },
   {
     title: 'More',
     items: [
-      { label: 'Pokémon', href: '/branch/pokemon', icon: SparkleIcon },
-      { label: 'One Piece', href: '/branch/onepiece', icon: SparkleIcon },
-      { label: 'Yu-Gi-Oh', href: '/branch/yugioh', icon: SparkleIcon },
-      { label: 'Sports', href: '/branch/nfl', icon: SparkleIcon },
+      { label: 'Creature TCG', href: '/branch/creature', icon: SparkleIcon },
+      { label: 'Adventure TCG', href: '/branch/adventure', icon: SparkleIcon },
+      { label: 'Arcana Duel', href: '/branch/arcana', icon: SparkleIcon },
+      { label: 'Sports Icons', href: '/branch/sports', icon: SparkleIcon },
     ],
   },
 ];

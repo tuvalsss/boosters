@@ -1,0 +1,20 @@
+<svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="84" y1="42" x2="520" y2="858" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7dd3fc"/>
+      <stop offset="0.42" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#0b1324"/>
+    </linearGradient>
+  </defs>
+  <rect x="62" y="36" width="476" height="828" rx="32" fill="url(#g)"/>
+  <rect x="94" y="76" width="412" height="748" rx="26" stroke="white" stroke-opacity=".3" stroke-width="4"/>
+  <path d="M300 230C390 288 438 356 438 438C438 526 377 590 300 590C223 590 162 526 162 438C162 356 210 288 300 230Z" fill="white" fill-opacity=".14"/>
+  <path d="M300 300C352 334 382 378 382 430C382 486 346 526 300 526C254 526 218 486 218 430C218 378 248 334 300 300Z" fill="#d7fbff"/>
+  <circle cx="268" cy="414" r="18" fill="#0b1324"/>
+  <circle cx="332" cy="414" r="18" fill="#0b1324"/>
+  <path d="M256 474C286 500 316 500 346 474" stroke="#0b1324" stroke-width="14" stroke-linecap="round"/>
+  <text x="300" y="142" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="900">BOOSTERS</text>
+  <text x="300" y="662" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="900">CREATURE PACK</text>
+  <text x="300" y="724" text-anchor="middle" fill="#ddf8ff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800">FANTASY TCG</text>
+  <path d="M96 792H504" stroke="white" stroke-opacity=".28" stroke-width="4"/>
+</svg>

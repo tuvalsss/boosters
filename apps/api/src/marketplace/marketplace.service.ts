@@ -49,18 +49,6 @@ export class MarketplaceService {
       throw new BadRequestException('Item is not a vaulted, active token');
     }
 
-    // KYC required for higher-volume sellers (spec §7).
-    if (seller.kycStatus !== 'APPROVED') {
-      const sold = await this.prisma.order.aggregate({
-        where: { sellerId: seller.id, type: 'MARKETPLACE_BUY', status: 'COMPLETED' },
-        _sum: { amountUsdc: true },
-      });
-      const volume = sold._sum.amountUsdc ?? new Prisma.Decimal(0);
-      if (volume.gte(this.env.SELLER_KYC_VOLUME_USDC)) {
-        throw new ForbiddenException('KYC verification is required to keep selling at this volume');
-      }
-    }
-
     const type = seller.role === 'ADMIN' || seller.role === 'OPS' ? 'FIRST_PARTY' : 'P2P';
     const fmv = await this.prisma.fmvSnapshot.findFirst({
       where: { OR: [{ vaultItemId }, { physicalCardId: item.physicalCardId }] },

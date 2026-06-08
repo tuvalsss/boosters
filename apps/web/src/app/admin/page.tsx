@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import {
   isStaff,
@@ -95,6 +96,28 @@ export default function AdminPage() {
       </div>
 
       {err && <p className="mt-4 rounded-xl bg-red-500/10 px-4 py-2 text-sm text-red-300">{err}</p>}
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {(
+          [
+            ['KYC queue', '/admin/kyc'],
+            ['Packs', '/admin/packs'],
+            ['Vault', '/admin/vault'],
+            ['Treasury', '/admin/treasury'],
+            ['Submissions', '/admin/submissions'],
+            ['Redemptions', '/admin/redemptions'],
+            ['Review queue', '/admin/review'],
+          ] as const
+        ).map(([label, href]) => (
+          <Link
+            key={href}
+            href={href}
+            className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-white/75 transition hover:border-white/20 hover:bg-white/[0.06]"
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
         <table className="w-full min-w-[760px] text-sm">

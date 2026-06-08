@@ -21,6 +21,14 @@ export interface OnrampSession {
   checkoutUrl: string;
 }
 
+export interface WithdrawalRequest {
+  id: string;
+  status: string;
+  amountUsdc: string;
+  destinationType: string;
+  destination: string;
+}
+
 /**
  * USDC on-ramp (spec §4). The custodial balance is credited only after a
  * confirmed payment: in sandbox the user confirms a simulated checkout; in live
@@ -108,5 +116,153 @@ export class PaymentsService {
       metadata: { amountUsdc: order.amountUsdc.toString() },
     });
     return completed;
+  }
+
+  /**
+   * Money-out path. KYC is mandatory here only: users may sign up and deposit
+   * without KYC, but withdrawals require APPROVED manual/provider review first.
+   */
+  async requestWithdrawal(
+    user: User,
+    amountUsdc: string,
+    destinationType: string,
+    destination: string,
+  ): Promise<WithdrawalRequest> {
+    if (user.kycStatus !== 'APPROVED') {
+      throw new ForbiddenException('KYC approval is required before withdrawals');
+    }
+    if (user.hold === 'SUSPENDED') throw new ForbiddenException('Account suspended');
+
+    const amount = new Prisma.Decimal(amountUsdc);
+    if (amount.lte(0)) throw new BadRequestException('Amount must be greater than zero');
+    if (!destination.trim()) throw new BadRequestException('Withdrawal destination is required');
+
+    const balance = await this.ledger.balanceOf(user.id);
+    if (balance.lt(amount)) {
+      throw new BadRequestException(
+        `Insufficient USDC balance: have ${balance.toString()}, need ${amount.toString()}`,
+      );
+    }
+
+    const metadata = {
+      destinationType: destinationType.trim().slice(0, 40),
+      destination: destination.trim().slice(0, 240),
+      requestedAt: new Date().toISOString(),
+    };
+
+    const order = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          type: 'WITHDRAWAL',
+          status: 'PROCESSING',
+          buyerId: user.id,
+          amountUsdc: amount,
+          idempotencyKey: `withdrawal_${randomUUID()}`,
+          metadata: metadata as Prisma.InputJsonValue,
+        },
+      });
+      await this.ledger.post(tx, created.id, [
+        {
+          accountType: 'USER_WALLET',
+          userId: user.id,
+          direction: 'DEBIT',
+          amountUsdc: amount,
+          memo: 'Withdrawal request',
+        },
+        {
+          accountType: 'EXTERNAL',
+          direction: 'CREDIT',
+          amountUsdc: amount,
+          memo: 'Withdrawal destination',
+        },
+      ]);
+      return created;
+    });
+
+    await this.audit.log({
+      actorId: user.id,
+      entityType: 'Order',
+      entityId: order.id,
+      action: 'WITHDRAWAL_REQUESTED',
+      metadata: { amountUsdc, destinationType: metadata.destinationType },
+    });
+
+    return {
+      id: order.id,
+      status: order.status,
+      amountUsdc: order.amountUsdc.toString(),
+      destinationType: metadata.destinationType,
+      destination: metadata.destination,
+    };
+  }
+
+  async listWithdrawals() {
+    return this.prisma.order.findMany({
+      where: { type: 'WITHDRAWAL' },
+      include: {
+        buyer: { select: { id: true, email: true, walletAddress: true, kycStatus: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  async completeWithdrawal(actor: User, orderId: string, onchainSignature?: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.type !== 'WITHDRAWAL') throw new NotFoundException('Withdrawal not found');
+    if (order.status === 'COMPLETED') return order;
+    if (order.status !== 'PROCESSING' && order.status !== 'PENDING') {
+      throw new BadRequestException(`Withdrawal is ${order.status}`);
+    }
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'COMPLETED', onchainSignature: onchainSignature || null },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'Order',
+      entityId: orderId,
+      action: 'WITHDRAWAL_COMPLETED',
+      fromState: order.status,
+      toState: 'COMPLETED',
+      metadata: { onchainSignature: onchainSignature ?? null },
+    });
+    return updated;
+  }
+
+  async failWithdrawal(actor: User, orderId: string, reason?: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.type !== 'WITHDRAWAL') throw new NotFoundException('Withdrawal not found');
+    if (order.status === 'FAILED') return order;
+    if (order.status === 'COMPLETED')
+      throw new BadRequestException('Completed withdrawals cannot fail');
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await this.ledger.post(tx, order.id, [
+        {
+          accountType: 'EXTERNAL',
+          direction: 'DEBIT',
+          amountUsdc: order.amountUsdc,
+          memo: 'Withdrawal refund',
+        },
+        {
+          accountType: 'USER_WALLET',
+          userId: order.buyerId!,
+          direction: 'CREDIT',
+          amountUsdc: order.amountUsdc,
+          memo: 'Withdrawal failed refund',
+        },
+      ]);
+      return tx.order.update({ where: { id: orderId }, data: { status: 'FAILED' } });
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'Order',
+      entityId: orderId,
+      action: 'WITHDRAWAL_FAILED',
+      fromState: order.status,
+      toState: 'FAILED',
+      metadata: { reason: reason ?? null },
+    });
+    return updated;
   }
 }

@@ -18,6 +18,14 @@ interface OddsConfig {
   weights?: Record<string, number>;
 }
 
+interface PackVisualInput {
+  description?: string;
+  brandLabel?: string;
+  coverImageUrl?: string;
+  accentColor?: string;
+  tier?: string;
+}
+
 @Injectable()
 export class PacksService {
   private readonly logger = new Logger(PacksService.name);
@@ -36,11 +44,22 @@ export class PacksService {
 
   // ---- Admin ----------------------------------------------------------------
 
-  async createPack(actor: User, name: string, priceUsdc: string, weights?: Record<string, number>) {
+  async createPack(
+    actor: User,
+    name: string,
+    priceUsdc: string,
+    weights?: Record<string, number>,
+    visual?: PackVisualInput,
+  ) {
     const pack = await this.prisma.pack.create({
       data: {
         name,
+        description: visual?.description?.trim() || null,
         priceUsdc: new Prisma.Decimal(priceUsdc),
+        brandLabel: visual?.brandLabel?.trim() || 'BOOSTERS',
+        coverImageUrl: visual?.coverImageUrl?.trim() || null,
+        accentColor: visual?.accentColor?.trim() || '#22c55e',
+        tier: visual?.tier?.trim().toUpperCase() || 'CORE',
         oddsConfig: { weights: weights ?? {} } as Prisma.InputJsonValue,
         status: 'DRAFT',
       },
@@ -50,6 +69,40 @@ export class PacksService {
       entityType: 'Pack',
       entityId: pack.id,
       action: 'PACK_CREATED',
+    });
+    return pack;
+  }
+
+  async updateVisual(actor: User, packId: string, visual: PackVisualInput) {
+    const pack = await this.prisma.pack.update({
+      where: { id: packId },
+      data: {
+        ...(visual.description !== undefined
+          ? { description: visual.description.trim() || null }
+          : {}),
+        ...(visual.brandLabel !== undefined
+          ? { brandLabel: visual.brandLabel.trim() || 'BOOSTERS' }
+          : {}),
+        ...(visual.coverImageUrl !== undefined
+          ? { coverImageUrl: visual.coverImageUrl.trim() || null }
+          : {}),
+        ...(visual.accentColor !== undefined
+          ? { accentColor: visual.accentColor.trim() || '#22c55e' }
+          : {}),
+        ...(visual.tier !== undefined ? { tier: visual.tier.trim().toUpperCase() || 'CORE' } : {}),
+      },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'Pack',
+      entityId: packId,
+      action: 'PACK_VISUAL_UPDATED',
+      metadata: {
+        brandLabel: pack.brandLabel,
+        tier: pack.tier,
+        coverImageUrl: pack.coverImageUrl,
+        accentColor: pack.accentColor,
+      },
     });
     return pack;
   }
@@ -142,6 +195,11 @@ export class PacksService {
     return {
       id: pack.id,
       name: pack.name,
+      description: pack.description,
+      brandLabel: pack.brandLabel,
+      coverImageUrl: pack.coverImageUrl,
+      accentColor: pack.accentColor,
+      tier: pack.tier,
       priceUsdc: pack.priceUsdc.toString(),
       status: pack.status,
       remaining: available.length,

@@ -37,16 +37,23 @@ async function main() {
   // First-party graded card already in the vault.
   const card = await prisma.physicalCard.upsert({
     where: { grader_certNumber: { grader: 'PSA', certNumber: 'DEVNET-0001' } },
-    update: {},
+    update: {
+      category: 'OTHER',
+      grade: '10',
+      setName: 'Boosters Originals',
+      cardName: 'Gold Chase Prototype',
+      year: 2026,
+      attributes: { variant: 'Gold', language: 'EN', note: 'devnet seed' },
+    },
     create: {
-      category: 'POKEMON',
+      category: 'OTHER',
       grader: 'PSA',
       certNumber: 'DEVNET-0001',
       grade: '10',
-      setName: 'Base Set',
-      cardName: 'Charizard (Holo)',
-      year: 1999,
-      attributes: { variant: 'Holo', language: 'EN', note: 'devnet seed' },
+      setName: 'Boosters Originals',
+      cardName: 'Gold Chase Prototype',
+      year: 2026,
+      attributes: { variant: 'Gold', language: 'EN', note: 'devnet seed' },
     },
   });
 
@@ -70,12 +77,60 @@ async function main() {
     },
   });
 
+  await prisma.token.upsert({
+    where: { vaultItemId: vaultItem.id },
+    update: {},
+    create: {
+      vaultItemId: vaultItem.id,
+      cnftAssetId: 'devnet-asset-0001',
+      merkleTree: 'devnet-tree',
+      leafIndex: 1,
+      mintSignature: 'devnet-mint-signature-0001',
+      ownerId: admin.id,
+      status: 'ACTIVE',
+    },
+  });
+
+  const pack =
+    (await prisma.pack.findFirst({ where: { name: 'Boosters Rookie Pack' } })) ??
+    (await prisma.pack.create({
+      data: {
+        name: 'Boosters Rookie Pack',
+        description: 'Original Boosters pack with transparent odds and vault-backed cards.',
+        priceUsdc: '35',
+        brandLabel: 'BOOSTERS',
+        coverImageUrl: '/assets/brand-packs/rookie.svg',
+        accentColor: '#1fbf75',
+        tier: 'CORE',
+        oddsConfig: { weights: { common: 20, rare: 4, chase: 1 } },
+        status: 'ACTIVE',
+      },
+    }));
+
+  await prisma.pack.update({
+    where: { id: pack.id },
+    data: {
+      description: 'Original Boosters pack with transparent odds and vault-backed cards.',
+      coverImageUrl: '/assets/brand-packs/rookie.svg',
+      accentColor: '#1fbf75',
+      tier: 'CORE',
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.packPoolItem.upsert({
+    where: { vaultItemId: vaultItem.id },
+    update: { packId: pack.id, tier: 'chase', consumed: false },
+    create: { packId: pack.id, vaultItemId: vaultItem.id, tier: 'chase' },
+  });
+
   // eslint-disable-next-line no-console
   console.log('Seeded devnet data:', {
     admin: admin.email,
     collector: collector.email,
     vaultItem: vaultItem.id,
     state: vaultItem.state,
+    pack: pack.name,
   });
 }
 

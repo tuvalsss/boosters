@@ -1,0 +1,18 @@
+<svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="88" y1="42" x2="520" y2="858" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff2a6"/>
+      <stop offset="0.45" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#21140b"/>
+    </linearGradient>
+  </defs>
+  <rect x="62" y="36" width="476" height="828" rx="32" fill="url(#g)"/>
+  <rect x="94" y="76" width="412" height="748" rx="26" stroke="#fff8cf" stroke-opacity=".55" stroke-width="4"/>
+  <path d="M300 224C392 224 466 298 466 390C466 482 392 556 300 556C208 556 134 482 134 390C134 298 208 224 300 224Z" fill="#fff8cf" fill-opacity=".18"/>
+  <path d="M300 274L332 348L412 356L352 408L370 488L300 446L230 488L248 408L188 356L268 348L300 274Z" fill="#fff8cf"/>
+  <path d="M206 594H394" stroke="#fff8cf" stroke-width="16" stroke-linecap="round"/>
+  <text x="300" y="142" text-anchor="middle" fill="#1d1307" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="900">BOOSTERS</text>
+  <text x="300" y="662" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="900">GOLD PACK</text>
+  <text x="300" y="724" text-anchor="middle" fill="#fff8cf" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800">CHASE VALUE</text>
+  <path d="M96 792H504" stroke="#fff8cf" stroke-opacity=".38" stroke-width="4"/>
+</svg>

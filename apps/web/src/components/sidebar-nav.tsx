@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { isStaff } from '@/lib/types';
+import { useI18n } from '@/i18n/language-context';
 import { NAV_SECTIONS, type NavSection } from './nav-data';
 import { BagIcon, GiftIcon, LayersIcon, SparkleIcon, TrophyIcon } from './icons';
 
@@ -11,24 +12,51 @@ import { BagIcon, GiftIcon, LayersIcon, SparkleIcon, TrophyIcon } from './icons'
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { authenticated, dbUser } = useAuth();
+  const { t } = useI18n();
 
   // Auth-dependent section (Account, plus Admin for staff).
   const accountSection: NavSection | null = authenticated
     ? {
         title: 'Account',
         items: [
-          { label: 'Portfolio', href: '/portfolio', icon: SparkleIcon },
-          { label: 'Redemptions', href: '/redeem', icon: GiftIcon },
-          { label: 'My Account', href: '/account', icon: BagIcon },
+          { label: 'Portfolio', labelKey: 'nav.portfolio', href: '/portfolio', icon: SparkleIcon },
+          { label: 'Redemptions', labelKey: 'nav.redemptions', href: '/redeem', icon: GiftIcon },
+          { label: 'My Account', labelKey: 'nav.myAccount', href: '/account', icon: BagIcon },
           ...(isStaff(dbUser?.role)
             ? [
-                { label: 'Admin', href: '/admin', icon: TrophyIcon },
-                { label: 'Vault', href: '/admin/vault', icon: LayersIcon },
-                { label: 'Submissions', href: '/admin/submissions', icon: BagIcon },
-                { label: 'Packs (admin)', href: '/admin/packs', icon: LayersIcon },
-                { label: 'Treasury', href: '/admin/treasury', icon: TrophyIcon },
-                { label: 'Redemptions', href: '/admin/redemptions', icon: GiftIcon },
-                { label: 'Review queue', href: '/admin/review', icon: SparkleIcon },
+                { label: 'Admin', labelKey: 'nav.admin', href: '/admin', icon: TrophyIcon },
+                { label: 'Vault', labelKey: 'nav.vault', href: '/admin/vault', icon: LayersIcon },
+                {
+                  label: 'Submissions',
+                  labelKey: 'nav.submissions',
+                  href: '/admin/submissions',
+                  icon: BagIcon,
+                },
+                { label: 'KYC', labelKey: 'nav.kyc', href: '/admin/kyc', icon: BagIcon },
+                {
+                  label: 'Packs (admin)',
+                  labelKey: 'nav.adminPacks',
+                  href: '/admin/packs',
+                  icon: LayersIcon,
+                },
+                {
+                  label: 'Treasury',
+                  labelKey: 'nav.treasury',
+                  href: '/admin/treasury',
+                  icon: TrophyIcon,
+                },
+                {
+                  label: 'Redemptions',
+                  labelKey: 'nav.redemptions',
+                  href: '/admin/redemptions',
+                  icon: GiftIcon,
+                },
+                {
+                  label: 'Review queue',
+                  labelKey: 'nav.reviewQueue',
+                  href: '/admin/review',
+                  icon: SparkleIcon,
+                },
               ]
             : []),
         ],
@@ -43,7 +71,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <div key={section.title ?? `primary-${i}`} className="flex flex-col gap-1">
           {section.title && (
             <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-widest text-white/35">
-              {section.title}
+              {sectionTitle(section.title, t)}
             </p>
           )}
           {section.items.map((item) => {
@@ -72,7 +100,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                 >
                   <Icon />
                 </span>
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1">{item.labelKey ? t(item.labelKey) : item.label}</span>
                 {item.badge && (
                   <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">
                     {item.badge}
@@ -85,4 +113,11 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       ))}
     </nav>
   );
+}
+
+function sectionTitle(title: string, t: (key: string) => string) {
+  if (title === 'Community') return t('nav.community');
+  if (title === 'More') return t('nav.more');
+  if (title === 'Account') return t('shell.account');
+  return title;
 }
