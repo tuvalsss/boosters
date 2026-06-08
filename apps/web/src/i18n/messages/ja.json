@@ -71,7 +71,9 @@
     "soldOut": "売り切れ",
     "loginToOpen": "ログインして開封",
     "emptyCta": "デモパックを開く",
-    "tryDemo": "無料デモを試す"
+    "tryDemo": "無料デモを試す",
+    "guestTitle": "ログインして自分のパックを見る",
+    "guestSubtitle": "ゲストは公開カタログを閲覧できます。実際の開封、所有パック、獲得カード、残高、マーケット操作はログイン後に利用できます。"
   },
   "account": {
     "title": "マイアカウント",
@@ -167,6 +169,32 @@
     "open": "デモパックを開く",
     "choosePack": "パックを選ぶ",
     "conversionTitle": "開封の高揚感を体験して参加",
-    "conversionCopy": "デモではBoosters所有のアートと架空残高を使います。実際の開封にはログイン、コミット済みseed、Vault在庫が必要で、KYCはユーザーが資金を出金する時だけ必要です。"
+    "conversionCopy": "デモではBoosters所有のアートと架空残高を使います。実際の開封にはログイン、コミット済みseed、Vault在庫が必要で、KYCはユーザーが資金を出金する時だけ必要です。",
+    "possiblePrizes": "獲得候補",
+    "packCarousel": "パックカルーセル",
+    "carouselHint": "スワイプまたはパックを選択",
+    "prizeLineup": "賞品ラインアップ",
+    "spin": "回してパックを破る",
+    "spinning": "回転中...",
+    "rouletteRunning": "ルーレットが着地中",
+    "rouletteReady": "中央マーカーが当たりを決定"
+  },
+  "help": {
+    "eyebrow": "Boosters の仕組み",
+    "title": "ゲーム、マーケット、保管",
+    "subtitle": "Boosters はフィジカルとデジタルをつなぐカード平台です。パックで保管カードを引き、取引・償還・売却ができ、出金には KYC 承認が必要です。",
+    "packsTitle": "パックと開封",
+    "packsBody": "パックを選び、保管残高で支払い、commit-reveal 抽選がそのパックプールから保管済み賞品を1つ選びます。",
+    "marketTitle": "マーケットプレイス",
+    "marketBody": "マーケットは自社 listing と P2P に対応します。ユーザーは所有する保管済みかつ有効 token のカードだけ listing 可能で、危険な価格差は管理レビューへ送られます。",
+    "kycTitle": "KYC と出金",
+    "kycBody": "登録と入金は開いたままです。KYC は出金前だけ必要で、スタッフが管理画面で書類を確認します。",
+    "adminTitle": "管理運用",
+    "adminBody": "スタッフはユーザー、KYC、保管庫、パック、財務、償還、保留 listing を管理画面から処理します。",
+    "demoLink": "デモを試す",
+    "packsLink": "パックを開く",
+    "marketLink": "マーケット",
+    "submitLink": "カードを送る",
+    "kycLink": "KYC / アカウント"
   }
 }

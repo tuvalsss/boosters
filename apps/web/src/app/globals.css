@@ -36,6 +36,157 @@ body {
   animation: pack-pop 0.6s ease-in-out infinite;
 }
 
+.pack-rip-half {
+  will-change: transform, opacity;
+}
+
+.pack-rip-left {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    82% 9%,
+    99% 18%,
+    80% 30%,
+    98% 43%,
+    81% 57%,
+    99% 70%,
+    84% 84%,
+    100% 100%,
+    0 100%
+  );
+}
+
+.pack-rip-right {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    16% 84%,
+    1% 70%,
+    19% 57%,
+    2% 43%,
+    20% 30%,
+    1% 18%,
+    18% 9%
+  );
+}
+
+@keyframes pack-rip-left {
+  0% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  42% {
+    transform: translateX(-0.45rem) rotate(-3deg) scale(1.03);
+  }
+  100% {
+    opacity: 0.54;
+    transform: translateX(-2.65rem) rotate(-14deg) scale(1.02);
+  }
+}
+
+@keyframes pack-rip-right {
+  0% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  42% {
+    transform: translateX(0.45rem) rotate(3deg) scale(1.03);
+  }
+  100% {
+    opacity: 0.54;
+    transform: translateX(2.65rem) rotate(14deg) scale(1.02);
+  }
+}
+
+.pack-rip-left.is-opening {
+  animation: pack-rip-left 1.12s cubic-bezier(0.2, 0.84, 0.2, 1) forwards;
+}
+
+.pack-rip-right.is-opening {
+  animation: pack-rip-right 1.12s cubic-bezier(0.2, 0.84, 0.2, 1) forwards;
+}
+
+.pack-rip-left.is-revealed {
+  opacity: 0.46;
+  transform: translateX(-2.65rem) rotate(-14deg) scale(1.02);
+}
+
+.pack-rip-right.is-revealed {
+  opacity: 0.46;
+  transform: translateX(2.65rem) rotate(14deg) scale(1.02);
+}
+
+@keyframes tear-flash {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(0.8);
+  }
+  35% {
+    opacity: 0.75;
+    transform: translateX(-50%) scaleY(1.15);
+  }
+}
+
+.tear-flash.is-opening {
+  animation: tear-flash 0.78s ease-out forwards;
+}
+
+.roulette-track {
+  will-change: transform;
+  transition: transform 2.45s cubic-bezier(0.12, 0.82, 0.18, 1);
+}
+
+.roulette-track.is-idle {
+  transition: transform 0.45s ease;
+}
+
+@keyframes winner-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.92) rotateY(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+.winner-pop {
+  animation: winner-pop 0.5s cubic-bezier(0.18, 0.9, 0.26, 1.15) forwards;
+}
+
+@keyframes carousel-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.4rem);
+  }
+}
+
+.carousel-breathe {
+  animation: carousel-breathe 3.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pack-pop,
+  .pack-rip-left.is-opening,
+  .pack-rip-right.is-opening,
+  .tear-flash.is-opening,
+  .winner-pop,
+  .carousel-breathe {
+    animation: none;
+  }
+
+  .roulette-track {
+    transition-duration: 0.01ms;
+  }
+}
+
 /* Slim scrollbars for the sidebar. */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;

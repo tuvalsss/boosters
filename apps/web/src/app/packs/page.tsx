@@ -8,9 +8,11 @@ import { BRANCHES } from '@/lib/branches';
 import type { PackListItem } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { ArrowRightIcon } from '@/components/icons';
+import { useAuth } from '@/lib/auth-context';
 
 export default function PacksPage() {
   const { t } = useI18n();
+  const { authenticated, login } = useAuth();
   const [packs, setPacks] = useState<PackListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +37,32 @@ export default function PacksPage() {
           {t('packs.tryDemo')} <ArrowRightIcon className="h-4 w-4" />
         </Link>
       </div>
+
+      {!authenticated && (
+        <section className="mt-6 grid gap-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div>
+            <h2 className="text-base font-bold text-emerald-50">{t('packs.guestTitle')}</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-emerald-50/70">
+              {t('packs.guestSubtitle')}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={login}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-white px-4 text-sm font-bold text-black transition hover:bg-white/90"
+            >
+              {t('common.login')}
+            </button>
+            <Link
+              href="/demo"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-white/15 px-4 text-sm font-bold text-white transition hover:bg-white/10"
+            >
+              {t('common.tryDemo')}
+            </Link>
+          </div>
+        </section>
+      )}
 
       {loading ? (
         <p className="mt-10 text-center text-white/40">{t('common.loading')}</p>

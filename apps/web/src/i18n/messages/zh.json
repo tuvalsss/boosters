@@ -71,7 +71,9 @@
     "soldOut": "已售罄",
     "loginToOpen": "登录后开启",
     "emptyCta": "打开演示卡包",
-    "tryDemo": "免费试用演示"
+    "tryDemo": "免费试用演示",
+    "guestTitle": "登录后查看你的卡包",
+    "guestSubtitle": "访客可以浏览公开目录，但真实开包、已拥有卡包、抽中卡牌、余额和市场操作需要登录后解锁。"
   },
   "account": {
     "title": "我的账户",
@@ -167,6 +169,32 @@
     "open": "打开演示卡包",
     "choosePack": "选择卡包",
     "conversionTitle": "先感受开包，再加入",
-    "conversionCopy": "演示使用 Boosters 自有美术和虚拟余额。真实开包需要登录、已承诺的 seed、金库库存，并且只有用户请求提现时才需要 KYC。"
+    "conversionCopy": "演示使用 Boosters 自有美术和虚拟余额。真实开包需要登录、已承诺的 seed、金库库存，并且只有用户请求提现时才需要 KYC。",
+    "possiblePrizes": "可能奖品",
+    "packCarousel": "卡包轮播",
+    "carouselHint": "滑动或选择卡包",
+    "prizeLineup": "奖品队列",
+    "spin": "旋转并撕开卡包",
+    "spinning": "旋转中...",
+    "rouletteRunning": "轮盘正在落点",
+    "rouletteReady": "中心标记决定中奖项"
+  },
+  "help": {
+    "eyebrow": "Boosters 如何运作",
+    "title": "游戏、市场与托管",
+    "subtitle": "Boosters 是实体与数字结合的卡牌平台：开包获得托管卡牌，卡牌可交易、兑换或卖回 vault，提现需要 KYC 审核。",
+    "packsTitle": "卡包与开包",
+    "packsBody": "选择卡包，用托管余额支付，然后 commit-reveal 抽奖从该卡包奖池中选出一个托管奖品。",
+    "marketTitle": "Marketplace",
+    "marketBody": "Marketplace 支持平台自营和 P2P 挂单。用户只能挂出自己拥有、已入库且 token 有效的卡牌；高风险价格偏差会进入管理员审核。",
+    "kycTitle": "KYC 与提现",
+    "kycBody": "注册和充值保持开放。KYC 只在提现前强制要求，之后由工作人员在后台审核文件。",
+    "adminTitle": "后台运营",
+    "adminBody": "工作人员可在后台管理用户、KYC、vault、卡包、金库、兑换和待审核 listing。",
+    "demoLink": "试用演示",
+    "packsLink": "打开卡包",
+    "marketLink": "Marketplace",
+    "submitLink": "提交卡牌",
+    "kycLink": "KYC / 账户"
   }
 }

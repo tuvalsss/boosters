@@ -71,7 +71,9 @@
     "soldOut": "Agotado",
     "loginToOpen": "Entra para abrir",
     "emptyCta": "Abrir pack demo",
-    "tryDemo": "Probar demo gratis"
+    "tryDemo": "Probar demo gratis",
+    "guestTitle": "Inicia sesión para ver tus packs",
+    "guestSubtitle": "Los invitados pueden ver el catálogo público, pero aperturas reales, packs propios, premios, saldos y acciones del marketplace se desbloquean al iniciar sesión."
   },
   "account": {
     "title": "Mi cuenta",
@@ -167,6 +169,32 @@
     "open": "Abrir pack demo",
     "choosePack": "Elegir pack",
     "conversionTitle": "Siente el pull y únete",
-    "conversionCopy": "La demo usa arte propio de Boosters y saldos ficticios. Las aperturas reales requieren login, seeds comprometidos, inventario en bóveda y KYC sólo cuando el usuario pide retirar fondos."
+    "conversionCopy": "La demo usa arte propio de Boosters y saldos ficticios. Las aperturas reales requieren login, seeds comprometidos, inventario en bóveda y KYC sólo cuando el usuario pide retirar fondos.",
+    "possiblePrizes": "premios posibles",
+    "packCarousel": "Carrusel de packs",
+    "carouselHint": "Desliza o elige un pack",
+    "prizeLineup": "Lista de premios",
+    "spin": "Girar y rasgar pack",
+    "spinning": "Girando...",
+    "rouletteRunning": "La ruleta está cayendo",
+    "rouletteReady": "El marcador central elige el premio"
+  },
+  "help": {
+    "eyebrow": "Cómo funciona Boosters",
+    "title": "Juego, mercado y custodia",
+    "subtitle": "Boosters es una plataforma phygital de cartas: los packs revelan cartas en bóveda, se pueden vender, canjear, revender al vault, y los retiros requieren KYC.",
+    "packsTitle": "Packs y aperturas",
+    "packsBody": "Elige un pack, paga con tu saldo custodial y el sorteo commit-reveal selecciona un premio de la pool de ese pack.",
+    "marketTitle": "Marketplace",
+    "marketBody": "El Marketplace permite listings propios y P2P. Solo se pueden listar cartas en bóveda con token activo que el usuario posee; precios de riesgo pasan a revisión.",
+    "kycTitle": "KYC y retiros",
+    "kycBody": "Registro y depósitos siguen abiertos. KYC solo se exige antes de retirar dinero, con revisión manual del equipo.",
+    "adminTitle": "Operación admin",
+    "adminBody": "El staff gestiona usuarios, KYC, bóveda, packs, tesorería, redenciones y listings retenidos desde el admin.",
+    "demoLink": "Probar demo",
+    "packsLink": "Abrir packs",
+    "marketLink": "Marketplace",
+    "submitLink": "Enviar carta",
+    "kycLink": "KYC / cuenta"
   }
 }

@@ -71,7 +71,9 @@
     "soldOut": "Épuisé",
     "loginToOpen": "Connectez-vous pour ouvrir",
     "emptyCta": "Ouvrir un pack démo",
-    "tryDemo": "Essayer la démo gratuite"
+    "tryDemo": "Essayer la démo gratuite",
+    "guestTitle": "Connectez-vous pour voir vos packs",
+    "guestSubtitle": "Les invités peuvent parcourir le catalogue public, mais les ouvertures réelles, packs détenus, gains, soldes et actions du marketplace se débloquent après connexion."
   },
   "account": {
     "title": "Mon compte",
@@ -167,6 +169,32 @@
     "open": "Ouvrir un pack démo",
     "choosePack": "Choisir un pack",
     "conversionTitle": "Ressentez le pull, puis rejoignez",
-    "conversionCopy": "La démo utilise l’art propriétaire de Boosters et des soldes fictifs. Les ouvertures réelles nécessitent connexion, seeds engagés, inventaire en coffre et KYC seulement quand l’utilisateur demande un retrait."
+    "conversionCopy": "La démo utilise l’art propriétaire de Boosters et des soldes fictifs. Les ouvertures réelles nécessitent connexion, seeds engagés, inventaire en coffre et KYC seulement quand l’utilisateur demande un retrait.",
+    "possiblePrizes": "lots possibles",
+    "packCarousel": "Carrousel de packs",
+    "carouselHint": "Glissez ou choisissez un pack",
+    "prizeLineup": "Liste des lots",
+    "spin": "Faire tourner et déchirer",
+    "spinning": "Rotation...",
+    "rouletteRunning": "La roulette atterrit",
+    "rouletteReady": "Le repère central choisit le gain"
+  },
+  "help": {
+    "eyebrow": "Comment fonctionne Boosters",
+    "title": "Jeu, marché et garde",
+    "subtitle": "Boosters est une plateforme phygitale de cartes: les packs révèlent des cartes en coffre, échangeables, rachetables, livrables, et les retraits exigent le KYC.",
+    "packsTitle": "Packs et ouvertures",
+    "packsBody": "Choisissez un pack, payez avec votre solde en garde, puis le tirage commit-reveal sélectionne un lot du pool du pack.",
+    "marketTitle": "Marketplace",
+    "marketBody": "Le Marketplace prend en charge les listings internes et P2P. Seules les cartes en coffre avec token actif appartenant au vendeur peuvent être listées; les prix à risque vont en revue admin.",
+    "kycTitle": "KYC et retraits",
+    "kycBody": "Inscription et dépôts restent ouverts. Le KYC est requis seulement avant un retrait d’argent, avec revue manuelle.",
+    "adminTitle": "Opérations admin",
+    "adminBody": "Le staff gère utilisateurs, KYC, coffre, packs, trésorerie, livraisons et listings retenus depuis l’admin.",
+    "demoLink": "Essayer la démo",
+    "packsLink": "Ouvrir des packs",
+    "marketLink": "Marketplace",
+    "submitLink": "Soumettre une carte",
+    "kycLink": "KYC / compte"
   }
 }

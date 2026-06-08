@@ -71,7 +71,9 @@
     "soldOut": "Esgotado",
     "loginToOpen": "Entre para abrir",
     "emptyCta": "Abrir pacote demo",
-    "tryDemo": "Testar demo grátis"
+    "tryDemo": "Testar demo grátis",
+    "guestTitle": "Entre para ver seus pacotes",
+    "guestSubtitle": "Visitantes podem ver o catálogo público, mas aberturas reais, pacotes próprios, prêmios, saldos e ações do marketplace liberam após login."
   },
   "account": {
     "title": "Minha conta",
@@ -167,6 +169,32 @@
     "open": "Abrir pacote demo",
     "choosePack": "Escolher pacote",
     "conversionTitle": "Sinta o pull e entre",
-    "conversionCopy": "A demo usa arte própria da Boosters e saldos fictícios. Aberturas reais exigem login, seeds comprometidos, inventário em cofre e KYC apenas quando o usuário pede saque."
+    "conversionCopy": "A demo usa arte própria da Boosters e saldos fictícios. Aberturas reais exigem login, seeds comprometidos, inventário em cofre e KYC apenas quando o usuário pede saque.",
+    "possiblePrizes": "prêmios possíveis",
+    "packCarousel": "Carrossel de pacotes",
+    "carouselHint": "Deslize ou escolha um pacote",
+    "prizeLineup": "Lista de prêmios",
+    "spin": "Girar e rasgar pacote",
+    "spinning": "Girando...",
+    "rouletteRunning": "A roleta está chegando",
+    "rouletteReady": "O marcador central escolhe o prêmio"
+  },
+  "help": {
+    "eyebrow": "Como o Boosters funciona",
+    "title": "Jogo, mercado e custódia",
+    "subtitle": "Boosters é uma plataforma phygital de cards: pacotes revelam cards em custódia, negociáveis, resgatáveis ou vendidos de volta; saques exigem KYC.",
+    "packsTitle": "Pacotes e aberturas",
+    "packsBody": "Escolha um pacote, pague com o saldo em custódia e o sorteio commit-reveal seleciona um prêmio do pool daquele pacote.",
+    "marketTitle": "Marketplace",
+    "marketBody": "O Marketplace suporta listagens próprias e P2P. Usuários só listam cards em cofre com token ativo que possuem; desvios de preço arriscados vão para revisão admin.",
+    "kycTitle": "KYC e saques",
+    "kycBody": "Cadastro e depósitos ficam abertos. KYC é exigido apenas antes de sacar dinheiro, com revisão manual da equipe.",
+    "adminTitle": "Operação admin",
+    "adminBody": "A equipe gerencia usuários, KYC, cofre, pacotes, tesouraria, resgates e listings retidos pelo admin.",
+    "demoLink": "Testar demo",
+    "packsLink": "Abrir pacotes",
+    "marketLink": "Marketplace",
+    "submitLink": "Enviar card",
+    "kycLink": "KYC / conta"
   }
 }

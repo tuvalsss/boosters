@@ -71,7 +71,9 @@
     "poolOdds": "Pool & odds",
     "openFor": "Open for",
     "soldOut": "Sold out",
-    "loginToOpen": "Login to open"
+    "loginToOpen": "Login to open",
+    "guestTitle": "Login to see your packs",
+    "guestSubtitle": "Guests can browse the public catalog, but your openings, owned packs, pulls, balances and marketplace actions unlock after login."
   },
   "guest": {
     "title": "Try Boosters before you join",
@@ -100,7 +102,15 @@
     "open": "Open demo pack",
     "choosePack": "Choose pack",
     "conversionTitle": "Feel the pull, then join",
-    "conversionCopy": "The demo uses Boosters-owned art and fake balances. Real openings require login, committed seeds, vaulted inventory, and KYC only when a user asks to withdraw funds."
+    "conversionCopy": "The demo uses Boosters-owned art and fake balances. Real openings require login, committed seeds, vaulted inventory, and KYC only when a user asks to withdraw funds.",
+    "possiblePrizes": "possible prizes",
+    "packCarousel": "Pack carousel",
+    "carouselHint": "Swipe or pick a pack",
+    "prizeLineup": "Prize lineup",
+    "spin": "Spin & tear pack",
+    "spinning": "Spinning...",
+    "rouletteRunning": "Roulette is landing",
+    "rouletteReady": "Center marker picks the win"
   },
   "account": {
     "title": "My Account",
@@ -168,5 +178,23 @@
     "history": "History",
     "noCards": "No cards yet. Browse the marketplace to start your collection.",
     "noTransactions": "No transactions yet."
+  },
+  "help": {
+    "eyebrow": "How Boosters works",
+    "title": "Game, market and custody flow",
+    "subtitle": "Boosters is a phygital card platform: packs reveal vaulted cards, cards can be traded, redeemed, sold back, and withdrawals require KYC approval.",
+    "packsTitle": "Packs and openings",
+    "packsBody": "Pick a pack, pay with your custodial balance, then the commit-reveal draw selects one vaulted prize from that pack pool.",
+    "marketTitle": "Marketplace",
+    "marketBody": "The Marketplace supports first-party and peer-to-peer listings. Users can list only vaulted, active-token cards they own; risky price deviations go to admin review.",
+    "kycTitle": "KYC and withdrawals",
+    "kycBody": "Signup and deposits stay open. KYC is required only before money-out withdrawals, then staff reviews documents in the admin panel.",
+    "adminTitle": "Admin operations",
+    "adminBody": "Staff manage users, KYC, vault intake, packs, treasury, redemptions and held marketplace listings from the admin area.",
+    "demoLink": "Try demo",
+    "packsLink": "Open packs",
+    "marketLink": "Marketplace",
+    "submitLink": "Submit a card",
+    "kycLink": "KYC / account"
   }
 }

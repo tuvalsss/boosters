@@ -11,6 +11,7 @@ import { ArrowLeftIcon, CloseIcon, HelpIcon, LoginIcon, MenuIcon, SparkleIcon } 
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const pathname = usePathname();
   const { t } = useI18n();
 
@@ -37,16 +38,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-h-screen flex-col">
-        <TopBar onMenu={() => setDrawerOpen(true)} />
+        <TopBar onMenu={() => setDrawerOpen(true)} onHelp={() => setHelpOpen(true)} />
         <main className="flex-1">{children}</main>
       </div>
 
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }
 
-function TopBar({ onMenu }: { onMenu: () => void }) {
+function TopBar({ onMenu, onHelp }: { onMenu: () => void; onHelp: () => void }) {
   const { t } = useI18n();
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/10 bg-booster-dark/80 px-4 py-3 backdrop-blur lg:px-8">
@@ -67,6 +69,7 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
       <div className="flex items-center gap-2">
         <button
           type="button"
+          onClick={onHelp}
           aria-label={t('common.help')}
           className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/80 hover:text-white sm:flex"
         >
@@ -76,6 +79,95 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         <AuthControls />
       </div>
     </header>
+  );
+}
+
+function HelpModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useI18n();
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, open]);
+
+  if (!open) return null;
+
+  const links = [
+    { href: '/demo', label: t('help.demoLink') },
+    { href: '/packs', label: t('help.packsLink') },
+    { href: '/marketplace', label: t('help.marketLink') },
+    { href: '/submit', label: t('help.submitLink') },
+    { href: '/account', label: t('help.kycLink') },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+      <button
+        type="button"
+        aria-label={t('common.close')}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="help-title"
+        className="relative max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/10 bg-[#111216] p-5 shadow-2xl shadow-black/50 sm:p-6"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-200/70">
+              {t('help.eyebrow')}
+            </p>
+            <h2 id="help-title" className="mt-1 text-2xl font-extrabold tracking-tight">
+              {t('help.title')}
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">{t('help.subtitle')}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('common.close')}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 transition hover:text-white"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <HelpCard title={t('help.packsTitle')} body={t('help.packsBody')} />
+          <HelpCard title={t('help.marketTitle')} body={t('help.marketBody')} />
+          <HelpCard title={t('help.kycTitle')} body={t('help.kycBody')} />
+          <HelpCard title={t('help.adminTitle')} body={t('help.adminBody')} />
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={onClose}
+              className="inline-flex h-10 items-center rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-white/85 transition hover:bg-white/[0.08]"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function HelpCard({ title, body }: { title: string; body: string }) {
+  return (
+    <article className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+      <h3 className="font-bold text-white">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-white/60">{body}</p>
+    </article>
   );
 }
 

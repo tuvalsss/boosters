@@ -71,7 +71,9 @@
     "soldOut": "Ausverkauft",
     "loginToOpen": "Zum Öffnen einloggen",
     "emptyCta": "Demo-Pack öffnen",
-    "tryDemo": "Kostenlose Demo testen"
+    "tryDemo": "Kostenlose Demo testen",
+    "guestTitle": "Einloggen, um deine Packs zu sehen",
+    "guestSubtitle": "Gäste können den öffentlichen Katalog ansehen. Echte Openings, eigene Packs, Pulls, Guthaben und Marketplace-Aktionen werden nach dem Login freigeschaltet."
   },
   "account": {
     "title": "Mein Konto",
@@ -167,6 +169,32 @@
     "open": "Demo-Pack öffnen",
     "choosePack": "Pack wählen",
     "conversionTitle": "Den Pull fühlen, dann beitreten",
-    "conversionCopy": "Die Demo nutzt Boosters-eigene Kunst und fiktive Guthaben. Echte Openings benötigen Login, committed seeds, Vault-Inventar und KYC nur, wenn ein Nutzer Geld abheben möchte."
+    "conversionCopy": "Die Demo nutzt Boosters-eigene Kunst und fiktive Guthaben. Echte Openings benötigen Login, committed seeds, Vault-Inventar und KYC nur, wenn ein Nutzer Geld abheben möchte.",
+    "possiblePrizes": "mögliche Gewinne",
+    "packCarousel": "Pack-Karussell",
+    "carouselHint": "Wischen oder Pack wählen",
+    "prizeLineup": "Gewinnliste",
+    "spin": "Drehen und Pack reißen",
+    "spinning": "Dreht...",
+    "rouletteRunning": "Roulette landet",
+    "rouletteReady": "Die Mittelmarke wählt den Gewinn"
+  },
+  "help": {
+    "eyebrow": "So funktioniert Boosters",
+    "title": "Spiel, Markt und Verwahrung",
+    "subtitle": "Boosters ist eine phygitale Kartenplattform: Packs enthüllen verwahrte Karten, die gehandelt, eingelöst oder zurückverkauft werden können; Auszahlungen brauchen KYC.",
+    "packsTitle": "Packs und Openings",
+    "packsBody": "Wähle ein Pack, zahle mit deinem verwahrten Guthaben, dann wählt der Commit-Reveal-Draw einen Gewinn aus dem Pack-Pool.",
+    "marketTitle": "Marketplace",
+    "marketBody": "Der Marketplace unterstützt First-Party- und P2P-Listings. Nutzer können nur eigene verwahrte Karten mit aktivem Token listen; riskante Preisabweichungen gehen in den Admin-Review.",
+    "kycTitle": "KYC und Auszahlungen",
+    "kycBody": "Registrierung und Einzahlungen bleiben offen. KYC ist nur vor Auszahlungen erforderlich, danach prüft das Team die Dokumente im Admin-Panel.",
+    "adminTitle": "Admin-Betrieb",
+    "adminBody": "Staff verwaltet Nutzer, KYC, Vault, Packs, Treasury, Redemptions und gehaltene Listings im Admin-Bereich.",
+    "demoLink": "Demo testen",
+    "packsLink": "Packs öffnen",
+    "marketLink": "Marketplace",
+    "submitLink": "Karte einreichen",
+    "kycLink": "KYC / Konto"
   }
 }
