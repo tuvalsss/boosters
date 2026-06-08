@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/icons';
+import { PackArt } from '@/components/pack-art';
 import { PackTile } from '@/components/pack-tile';
 import { useI18n } from '@/i18n/language-context';
 import { BRANCHES } from '@/lib/branches';
@@ -54,13 +54,10 @@ export default function HomePage() {
           <div className="order-1 flex justify-center lg:order-2">
             <div className="relative h-64 w-72 sm:h-80 sm:w-96">
               {BRANCHES.slice(0, 3).map((branch, index) => (
-                <Image
+                <PackArt
                   key={branch.key}
                   src={branch.packImage}
                   alt={`${branch.name} pack`}
-                  width={600}
-                  height={900}
-                  priority={index === 0}
                   className="absolute left-1/2 top-1/2 h-60 w-auto rounded-2xl shadow-2xl ring-1 ring-white/10 sm:h-72"
                   style={{
                     transform: `translate(-50%,-50%) translateX(${(index - 1) * 42}%) rotate(${

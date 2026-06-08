@@ -1,0 +1,75 @@
+<svg width="600" height="900" viewBox="0 0 600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="body" x1="78" y1="44" x2="520" y2="855" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c57bff"/>
+      <stop offset="0.18" stop-color="#6d16dc"/>
+      <stop offset="0.72" stop-color="#160027"/>
+      <stop offset="1" stop-color="#050507"/>
+    </linearGradient>
+    <linearGradient id="side" x1="72" y1="70" x2="520" y2="830" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".58"/>
+      <stop offset=".2" stop-color="white" stop-opacity=".04"/>
+      <stop offset=".5" stop-color="#000" stop-opacity=".24"/>
+      <stop offset=".82" stop-color="white" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".45"/>
+    </linearGradient>
+    <linearGradient id="foil" x1="88" y1="74" x2="520" y2="836" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".65"/>
+      <stop offset=".2" stop-color="white" stop-opacity="0"/>
+      <stop offset=".43" stop-color="white" stop-opacity=".28"/>
+      <stop offset=".58" stop-color="white" stop-opacity="0"/>
+      <stop offset=".8" stop-color="white" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".2"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="118" y1="110" x2="520" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f7f7f7"/>
+      <stop offset=".16" stop-color="#8d8d8d"/>
+      <stop offset=".32" stop-color="#ffffff"/>
+      <stop offset=".5" stop-color="#b8b8b8"/>
+      <stop offset=".72" stop-color="#f9f9f9"/>
+      <stop offset="1" stop-color="#777"/>
+    </linearGradient>
+    <pattern id="motif" width="82" height="82" patternUnits="userSpaceOnUse">
+      <circle cx="40" cy="42" r="17" stroke="white" stroke-opacity=".13" stroke-width="4"/>
+      <path d="M22 42H58M40 24V60" stroke="black" stroke-opacity=".14" stroke-width="4"/>
+      <path d="M66 18l8 12 14 3-10 10 1 14-13-6-13 6 2-14-10-10 14-3z" fill="white" fill-opacity=".08"/>
+    </pattern>
+    <filter id="shadow" x="30" y="30" width="540" height="850" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#000" flood-opacity=".55"/>
+    </filter>
+  </defs>
+
+  <rect width="600" height="900" fill="none"/>
+  <g filter="url(#shadow)">
+    
+    <path d="M95 76H505L526 116V790L505 826H95L74 790V116L95 76Z" fill="url(#body)"/>
+    <path d="M106 100H494L506 126V776L494 802H106L94 776V126L106 100Z" fill="url(#motif)" opacity=".78"/>
+    <path d="M95 76H505L526 116V790L505 826H95L74 790V116L95 76Z" fill="url(#side)" style="mix-blend-mode:screen" opacity=".78"/>
+    <path d="M126 116H474L488 142V760L474 786H126L112 760V142L126 116Z" stroke="white" stroke-opacity=".22" stroke-width="4"/>
+    <g opacity=".95">
+    <path d="M82 78H518V102H82Z" fill="#050505" fill-opacity=".25"/>
+    <path d="M82 800H518V824H82Z" fill="#050505" fill-opacity=".28"/>
+    <polyline points="82,104 92,112 102,104 112,112 122,104 132,112 142,104 152,112 162,104 172,112 182,104 192,112 202,104 212,112 222,104 232,112 242,104 252,112 262,104 272,112 282,104 292,112 302,104 312,112 322,104 332,112 342,104 352,112 362,104 372,112 382,104 392,112 402,104 412,112 422,104 432,112 442,104 452,112 462,104 472,112 482,104 492,112 502,104 512,112 522,104" stroke="white" stroke-opacity=".5" stroke-width="4" fill="none"/>
+    <polyline points="82,798 92,806 102,798 112,806 122,798 132,806 142,798 152,806 162,798 172,806 182,798 192,806 202,798 212,806 222,798 232,806 242,798 252,806 262,798 272,806 282,798 292,806 302,798 312,806 322,798 332,806 342,798 352,806 362,798 372,806 382,798 392,806 402,798 412,806 422,798 432,806 442,798 452,806 462,798 472,806 482,798 492,806 502,798 512,806 522,798" stroke="white" stroke-opacity=".5" stroke-width="4" fill="none"/>
+    <path d="M92 88H508" stroke="white" stroke-opacity=".42" stroke-width="2"/><path d="M92 92H508" stroke="white" stroke-opacity=".42" stroke-width="2"/><path d="M92 96H508" stroke="white" stroke-opacity=".42" stroke-width="2"/><path d="M92 100H508" stroke="white" stroke-opacity=".42" stroke-width="2"/><path d="M92 104H508" stroke="white" stroke-opacity=".14" stroke-width="2"/><path d="M92 108H508" stroke="white" stroke-opacity=".14" stroke-width="2"/><path d="M92 112H508" stroke="white" stroke-opacity=".14" stroke-width="2"/><path d="M92 116H508" stroke="white" stroke-opacity=".14" stroke-width="2"/><path d="M92 120H508" stroke="white" stroke-opacity=".14" stroke-width="2"/><path d="M92 124H508" stroke="white" stroke-opacity=".14" stroke-width="2"/>
+    <path d="M92 804H508" stroke="black" stroke-opacity=".36" stroke-width="2"/><path d="M92 808H508" stroke="black" stroke-opacity=".36" stroke-width="2"/><path d="M92 812H508" stroke="black" stroke-opacity=".36" stroke-width="2"/><path d="M92 816H508" stroke="black" stroke-opacity=".36" stroke-width="2"/><path d="M92 820H508" stroke="black" stroke-opacity=".14" stroke-width="2"/><path d="M92 824H508" stroke="black" stroke-opacity=".14" stroke-width="2"/><path d="M92 828H508" stroke="black" stroke-opacity=".14" stroke-width="2"/><path d="M92 832H508" stroke="black" stroke-opacity=".14" stroke-width="2"/><path d="M92 836H508" stroke="black" stroke-opacity=".14" stroke-width="2"/><path d="M92 840H508" stroke="black" stroke-opacity=".14" stroke-width="2"/>
+  </g>
+    <g opacity=".72">
+    <path d="M96 116V786" stroke="white" stroke-opacity=".18" stroke-width="5"/>
+    <path d="M114 128V774" stroke="black" stroke-opacity=".28" stroke-width="4"/>
+    <path d="M504 116V786" stroke="white" stroke-opacity=".22" stroke-width="5"/>
+    <path d="M486 128V774" stroke="black" stroke-opacity=".32" stroke-width="4"/>
+  </g>
+    
+    <g transform="translate(300 360) scale(1)"><path d="M0-126L32-34L122-84L70 6L120 92L30 44L0 130L-30 44L-120 92L-70 6L-122-84L-32-34Z" fill="#eee6ff"/>
+    <path d="M0-126L0 130L30 44L120 92L70 6L122-84L32-34Z" fill="#c3a4ff"/><circle r="20" fill="#7c3aed"/></g>
+    
+    <text x="300" y="612" text-anchor="middle" fill="white" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="900">ARCANA DUEL</text>
+    <text x="300" y="658" text-anchor="middle" fill="white" fill-opacity=".88" font-family="Inter, Arial, sans-serif" font-size="27" font-weight="800">MAGIC TCG</text>
+    <path d="M128 700H472" stroke="white" stroke-opacity=".2" stroke-width="4"/>
+    <path d="M88 80C164 106 232 112 300 106C376 99 446 102 512 78" stroke="white" stroke-opacity=".22" stroke-width="5"/>
+    <path d="M82 820C164 796 235 790 302 796C376 802 446 800 516 822" stroke="white" stroke-opacity=".18" stroke-width="5"/>
+    <path d="M118 116C188 136 262 142 338 136C392 132 440 126 486 110" stroke="white" stroke-opacity=".24" stroke-width="18" style="mix-blend-mode:screen"/>
+    <path d="M82 76H518V826H82Z" fill="url(#foil)" style="mix-blend-mode:screen" opacity=".86"/>
+  </g>
+</svg>

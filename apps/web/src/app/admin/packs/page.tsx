@@ -6,15 +6,7 @@ import { usd } from '@/lib/api';
 import { isStaff } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { PackArt } from '@/components/pack-art';
-
-const ASSET_PRESETS = [
-  '/assets/brand-packs/rookie.svg',
-  '/assets/brand-packs/silver.svg',
-  '/assets/brand-packs/gold.svg',
-  '/assets/brand-packs/legend.svg',
-  '/assets/brand-packs/sports.svg',
-  '/assets/brand-packs/creature.svg',
-];
+import { PACK_ASSET_PRESETS } from '@/lib/pack-assets';
 
 interface AdminPack {
   id: string;
@@ -38,7 +30,7 @@ export default function AdminPacksPage() {
     description: 'Original Boosters pack with transparent odds.',
     priceUsdc: '35',
     brandLabel: 'BOOSTERS',
-    coverImageUrl: ASSET_PRESETS[0]!,
+    coverImageUrl: PACK_ASSET_PRESETS[0]!,
     accentColor: '#1fbf75',
     tier: 'CORE',
     weights: '{ "common": 20, "rare": 4, "chase": 1 }',
@@ -172,7 +164,7 @@ export default function AdminPacksPage() {
             className="h-10 rounded-lg border border-white/10 bg-black/30 px-3 text-sm outline-none focus:border-white/30"
           />
           <datalist id="pack-asset-presets">
-            {ASSET_PRESETS.map((asset) => (
+            {PACK_ASSET_PRESETS.map((asset) => (
               <option key={asset} value={asset} />
             ))}
           </datalist>
@@ -210,7 +202,11 @@ export default function AdminPacksPage() {
               className="relative h-36 w-24 shrink-0 rounded-xl border border-white/10"
               style={{ background: `linear-gradient(145deg, ${p.accentColor}35, transparent)` }}
             >
-              <PackArt src={p.coverImageUrl ?? ASSET_PRESETS[0]!} alt={p.name} className="h-full" />
+              <PackArt
+                src={p.coverImageUrl ?? PACK_ASSET_PRESETS[0]!}
+                alt={p.name}
+                className="h-full"
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">

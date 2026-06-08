@@ -14,9 +14,12 @@ export function PackArt({
   imageClassName?: string;
   style?: CSSProperties;
 }) {
+  const positionClass = /\b(absolute|fixed|sticky)\b/.test(className) ? '' : 'relative';
+  const hasNativePackFinish = src.includes('/assets/brand-packs/');
+
   return (
     <span
-      className={`pack-art-shell relative inline-flex overflow-hidden ${className}`}
+      className={`pack-art-shell ${positionClass} inline-flex overflow-hidden ${className}`}
       style={style}
     >
       <Image
@@ -26,11 +29,15 @@ export function PackArt({
         height={900}
         className={`relative z-10 h-full w-auto object-contain ${imageClassName}`}
       />
-      <span className="pack-art-crimp pack-art-crimp-top" />
-      <span className="pack-art-crimp pack-art-crimp-bottom" />
-      <span className="pack-art-side pack-art-side-left" />
-      <span className="pack-art-side pack-art-side-right" />
-      <span className="pack-art-shine" />
+      {!hasNativePackFinish && (
+        <>
+          <span className="pack-art-crimp pack-art-crimp-top" />
+          <span className="pack-art-crimp pack-art-crimp-bottom" />
+          <span className="pack-art-side pack-art-side-left" />
+          <span className="pack-art-side pack-art-side-right" />
+        </>
+      )}
+      <span className={`pack-art-shine ${hasNativePackFinish ? 'pack-art-shine-native' : ''}`} />
     </span>
   );
 }

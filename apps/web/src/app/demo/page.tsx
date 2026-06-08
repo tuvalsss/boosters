@@ -164,7 +164,7 @@ export default function DemoPage() {
                 style={{ backgroundColor: selected.accent }}
               />
 
-              <PackRipImage branch={selected} phase={phase} />
+              <PackRevealStage branch={selected} phase={phase} result={result} />
 
               <div
                 className={[
@@ -274,7 +274,7 @@ function PackCarousel({
                   alt=""
                   className={[
                     'h-28 transition group-hover:-translate-y-1',
-                    active ? 'carousel-breathe' : '',
+                    active ? 'carousel-breathe pack-mini-selected' : '',
                   ].join(' ')}
                   imageClassName="drop-shadow-xl"
                   style={{ animationDelay: `${index * 0.15}s` }}
@@ -291,49 +291,69 @@ function PackCarousel({
   );
 }
 
-function PackRipImage({ branch, phase }: { branch: Branch; phase: Phase }) {
-  const showWholePack = phase === 'idle';
-  const stateClass = phase === 'opening' ? 'is-opening' : phase === 'revealed' ? 'is-revealed' : '';
-
+function PackRevealStage({
+  branch,
+  phase,
+  result,
+}: {
+  branch: Branch;
+  phase: Phase;
+  result: DemoPrize;
+}) {
   return (
-    <div className="absolute top-6 z-10 h-72 w-48 sm:h-80 sm:w-52">
-      {showWholePack ? (
-        <Image
-          src={branch.packImage}
-          alt={`${branch.name} demo pack`}
-          width={600}
-          height={900}
-          priority
-          className="h-full w-auto rounded-2xl drop-shadow-2xl transition duration-500"
-        />
+    <div className="absolute top-3 z-10 flex h-[20rem] w-full items-start justify-center sm:top-1">
+      {phase === 'idle' ? (
+        <div key={branch.key} className="pack-3d-stage h-72 w-56 sm:h-80">
+          <div className="pack-3d-card h-full w-full">
+            <div className="pack-face pack-face-front">
+              <PackArt
+                src={branch.packImage}
+                alt={`${branch.name} demo pack`}
+                className="h-full"
+                imageClassName="drop-shadow-2xl"
+              />
+            </div>
+            <div className="pack-face pack-face-back">
+              <PackArt
+                src={branch.packBackImage}
+                alt=""
+                className="h-full"
+                imageClassName="drop-shadow-2xl"
+              />
+            </div>
+          </div>
+        </div>
       ) : (
-        <>
-          <div
-            className={`pack-rip-half pack-rip-left ${stateClass} absolute inset-y-0 left-0 w-1/2`}
-          >
-            <Image
-              src={branch.packImage}
-              alt=""
-              width={600}
-              height={900}
-              className="absolute left-0 top-0 h-full w-[200%] max-w-none object-contain"
-            />
-          </div>
-          <div
-            className={`pack-rip-half pack-rip-right ${stateClass} absolute inset-y-0 right-0 w-1/2`}
-          >
-            <Image
-              src={branch.packImage}
-              alt=""
-              width={600}
-              height={900}
-              className="absolute right-0 top-0 h-full w-[200%] max-w-none object-contain"
-            />
-          </div>
+        <div
+          key={`${branch.key}-${phase}`}
+          className={[
+            'pack-open-stage h-72 w-64 sm:h-80 sm:w-72',
+            phase === 'opening' ? 'is-opening' : 'is-revealed',
+          ].join(' ')}
+        >
           <span
-            className={`tear-flash ${phase === 'opening' ? 'is-opening' : ''} absolute left-1/2 top-4 z-20 h-[88%] w-1 rounded-full bg-white/80 shadow-[0_0_42px_rgba(255,255,255,0.7)]`}
+            className="pack-open-glow"
+            style={{
+              background: `radial-gradient(circle at 50% 34%, ${branch.accent}66, transparent 64%)`,
+            }}
           />
-        </>
+          <PackArt
+            src={branch.packOpenedImage}
+            alt={`${branch.name} opened pack`}
+            className="pack-opened-image h-full"
+            imageClassName="drop-shadow-2xl"
+          />
+          <Image
+            src={result.image}
+            alt=""
+            width={500}
+            height={700}
+            className={[
+              'pack-emerging-card h-52 w-auto rounded-xl shadow-2xl ring-1 ring-white/20 sm:h-60',
+              phase === 'revealed' ? 'is-revealed' : '',
+            ].join(' ')}
+          />
+        </div>
       )}
     </div>
   );
@@ -379,27 +399,16 @@ function RouletteReel({ phase, targetSlot }: { phase: Phase; targetSlot: number 
 function WinnerReveal({ result }: { result: DemoPrize }) {
   const { t } = useI18n();
   return (
-    <div className="winner-pop absolute top-2 z-20 flex flex-col items-center">
-      <Image
-        src={result.image}
-        alt={result.name}
-        width={500}
-        height={700}
-        className="h-72 w-auto rounded-xl shadow-2xl ring-1 ring-white/20 sm:h-80"
-      />
-      <div className="mt-3 w-64 rounded-xl border border-white/10 bg-black/65 p-3 text-center backdrop-blur">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">
-          {t('demo.resultLabel')}
-        </p>
-        <p className="mt-1 truncate font-bold">{result.name}</p>
-        <div className="mt-2 flex justify-center gap-2 text-xs">
-          <span className="rounded-full bg-white/10 px-2.5 py-1 text-white/80">
-            {result.rarity}
-          </span>
-          <span className="rounded-full bg-emerald-400 px-2.5 py-1 font-bold text-black">
-            ${result.value}
-          </span>
-        </div>
+    <div className="winner-pop absolute right-3 top-3 z-40 w-56 rounded-xl border border-white/10 bg-black/70 p-3 text-left shadow-2xl backdrop-blur">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">
+        {t('demo.resultLabel')}
+      </p>
+      <p className="mt-1 truncate font-bold">{result.name}</p>
+      <div className="mt-2 flex gap-2 text-xs">
+        <span className="rounded-full bg-white/10 px-2.5 py-1 text-white/80">{result.rarity}</span>
+        <span className="rounded-full bg-emerald-400 px-2.5 py-1 font-bold text-black">
+          ${result.value}
+        </span>
       </div>
     </div>
   );

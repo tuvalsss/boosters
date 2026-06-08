@@ -29,7 +29,7 @@ INSERT INTO "ManagedCardCategory" (
   "sortOrder",
   "updatedAt"
 ) VALUES
-  ('cat_pokemon', 'pokemon', 'Pokemon / Creature TCG', 'POKEMON', 'Licensed Pokemon-style inventory category. Upload only licensed art/assets.', '/assets/brand-packs/creature.svg', '#2563eb', 10, CURRENT_TIMESTAMP),
-  ('cat_sports', 'sports', 'Sports Cards', 'SPORTS', 'Rookie, vintage, graded and slabbed sports cards.', '/assets/brand-packs/sports.svg', '#ef4444', 20, CURRENT_TIMESTAMP),
-  ('cat_tcg', 'tcg', 'Trading Card Games', 'TCG', 'Fantasy, anime and game TCG inventory.', '/assets/brand-packs/legend.svg', '#7c3aed', 30, CURRENT_TIMESTAMP),
-  ('cat_other', 'other', 'Other Collectibles', 'OTHER', 'Fallback category for special drops and collectibles.', '/assets/brand-packs/gold.svg', '#f59e0b', 40, CURRENT_TIMESTAMP);
+  ('cat_pokemon', 'pokemon', 'Pokemon / Creature TCG', 'POKEMON', 'Licensed Pokemon-style inventory category. Upload only licensed art/assets.', '/assets/brand-packs/creature-front.svg', '#2563eb', 10, CURRENT_TIMESTAMP),
+  ('cat_sports', 'sports', 'Sports Cards', 'SPORTS', 'Rookie, vintage, graded and slabbed sports cards.', '/assets/brand-packs/sports-front.svg', '#ef4444', 20, CURRENT_TIMESTAMP),
+  ('cat_tcg', 'tcg', 'Trading Card Games', 'TCG', 'Fantasy, anime and game TCG inventory.', '/assets/brand-packs/arcana-front.svg', '#7c3aed', 30, CURRENT_TIMESTAMP),
+  ('cat_other', 'other', 'Other Collectibles', 'OTHER', 'Fallback category for special drops and collectibles.', '/assets/brand-packs/legend-front.svg', '#f59e0b', 40, CURRENT_TIMESTAMP);

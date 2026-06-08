@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BRANCHES, branchByKey, type BranchKey } from '@/lib/branches';
 import { ArrowRightIcon } from '@/components/icons';
+import { PackArt } from '@/components/pack-art';
 
 export function generateStaticParams() {
   return BRANCHES.map((b) => ({ key: b.key }));
@@ -37,13 +38,11 @@ export default function BranchPage({ params }: { params: { key: string } }) {
             </Link>
           </div>
           <div className="flex justify-center">
-            <Image
+            <PackArt
               src={branch.packImage}
               alt={`${branch.name} pack`}
-              width={600}
-              height={900}
-              priority
-              className="h-64 w-auto rounded-2xl shadow-2xl ring-1 ring-white/10"
+              className="h-64"
+              imageClassName="drop-shadow-2xl"
             />
           </div>
         </div>

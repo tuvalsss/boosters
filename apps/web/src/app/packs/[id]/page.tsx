@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { publicFetch, usd } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { BRANCHES } from '@/lib/branches';
+import { packAssetsFor } from '@/lib/pack-assets';
 import type { PackDetail, PackOpening, VerifyOpening } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { ArrowRightIcon } from '@/components/icons';
@@ -39,8 +41,10 @@ export default function PackDetailPage() {
   if (err) return <Center>{err}</Center>;
   if (!pack) return <Center>Loading...</Center>;
 
-  const packImage =
-    pack.coverImageUrl ?? BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!.packImage;
+  const fallbackBranch = BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!;
+  const packAssets = packAssetsFor(pack.coverImageUrl, fallbackBranch);
+  const previewPrizeImage =
+    won?.result?.physicalCard.photos?.[0]?.url ?? fallbackBranch.cardImages[0];
 
   const open = async () => {
     if (!authenticated) return login();
@@ -78,13 +82,48 @@ export default function PackDetailPage() {
       </Link>
 
       <div className="mt-4 flex flex-col items-center text-center">
-        <div
-          className={[
-            'relative flex h-72 w-48 justify-center transition',
-            phase === 'opening' ? 'animate-pack-pop' : '',
-          ].join(' ')}
-        >
-          <PackArt src={packImage} alt={pack.name} className="h-72" />
+        <div className="relative flex h-[21rem] w-full max-w-sm justify-center transition">
+          {phase === 'idle' ? (
+            <div className="pack-3d-stage h-72 w-56">
+              <div className="pack-3d-card h-full w-full">
+                <div className="pack-face pack-face-front">
+                  <PackArt src={packAssets.front} alt={pack.name} className="h-full" />
+                </div>
+                <div className="pack-face pack-face-back">
+                  <PackArt src={packAssets.back} alt="" className="h-full" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={[
+                'pack-open-stage h-72 w-64',
+                phase === 'opening' ? 'is-opening' : 'is-revealed',
+              ].join(' ')}
+            >
+              <span
+                className="pack-open-glow"
+                style={{
+                  background: `radial-gradient(circle at 50% 34%, ${pack.accentColor}66, transparent 64%)`,
+                }}
+              />
+              <PackArt
+                src={packAssets.opened}
+                alt={`${pack.name} opened pack`}
+                className="pack-opened-image h-full"
+              />
+              <Image
+                src={previewPrizeImage}
+                alt=""
+                width={500}
+                height={700}
+                className={[
+                  'pack-emerging-card h-52 w-auto rounded-xl shadow-2xl ring-1 ring-white/20',
+                  phase === 'done' ? 'is-revealed' : '',
+                ].join(' ')}
+              />
+            </div>
+          )}
         </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight">{pack.name}</h1>
         {pack.description && <p className="mt-2 max-w-lg text-white/55">{pack.description}</p>}

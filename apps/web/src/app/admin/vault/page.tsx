@@ -147,7 +147,7 @@ function CategoryManager({
     slug: 'pokemon',
     legacyCategory: 'POKEMON',
     description: 'Licensed TCG inventory category.',
-    imageUrl: '/assets/brand-packs/creature.svg',
+    imageUrl: '/assets/brand-packs/creature-front.svg',
     accentColor: '#2563eb',
     sortOrder: '10',
     active: true,

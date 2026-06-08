@@ -1,7 +1,7 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { BRANCHES } from '@/lib/branches';
 import { PartyIcon } from '@/components/icons';
+import { PackArt } from '@/components/pack-art';
 
 export const metadata = { title: 'Pack Party · Boosters' };
 
@@ -19,12 +19,10 @@ export default function PackPartyPage() {
       <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
         <div className="absolute inset-y-0 right-0 hidden w-1/2 opacity-60 lg:block">
           {featured.map((branch, index) => (
-            <Image
+            <PackArt
               key={branch.key}
               src={branch.packImage}
               alt=""
-              width={600}
-              height={900}
               className="absolute top-1/2 h-72 w-auto rounded-xl shadow-2xl ring-1 ring-white/10"
               style={{
                 right: `${index * 4 + 6}rem`,
@@ -77,11 +75,10 @@ export default function PackPartyPage() {
               className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition hover:border-white/20"
             >
               <div className="relative h-44 bg-black/30">
-                <Image
+                <PackArt
                   src={branch.packImage}
                   alt={`${branch.name} pack`}
-                  fill
-                  className="object-contain p-5 transition group-hover:-translate-y-1"
+                  className="mx-auto h-40 py-3 transition group-hover:-translate-y-1"
                 />
                 <span className="absolute left-3 top-3 rounded-full bg-emerald-400 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-black">
                   {room.status}
