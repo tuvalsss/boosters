@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { usd } from '@/lib/api';
 import { isStaff } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
+import { PackArt } from '@/components/pack-art';
 
 const ASSET_PRESETS = [
   '/assets/brand-packs/rookie.svg',
@@ -141,8 +141,8 @@ export default function AdminPacksPage() {
           className="rounded-2xl border border-white/10 p-4"
           style={{ background: `linear-gradient(145deg, ${form.accentColor}35, transparent)` }}
         >
-          <div className="relative mx-auto h-64 w-40">
-            <Image src={form.coverImageUrl} alt="Pack preview" fill className="object-contain" />
+          <div className="mx-auto flex h-64 justify-center">
+            <PackArt src={form.coverImageUrl} alt="Pack preview" className="h-64" />
           </div>
           <p className="mt-3 truncate text-center text-sm font-semibold">{form.name}</p>
           <p className="text-center text-xs text-white/45">
@@ -164,17 +164,18 @@ export default function AdminPacksPage() {
             value={form.accentColor}
             onChange={(v) => set('accentColor', v)}
           />
-          <select
+          <input
             value={form.coverImageUrl}
             onChange={(e) => set('coverImageUrl', e.target.value)}
+            placeholder={t('admin.coverImage')}
+            list="pack-asset-presets"
             className="h-10 rounded-lg border border-white/10 bg-black/30 px-3 text-sm outline-none focus:border-white/30"
-          >
+          />
+          <datalist id="pack-asset-presets">
             {ASSET_PRESETS.map((asset) => (
-              <option key={asset} value={asset} className="bg-booster-dark">
-                {asset.split('/').pop()}
-              </option>
+              <option key={asset} value={asset} />
             ))}
-          </select>
+          </datalist>
           <input
             value={form.description}
             onChange={(e) => set('description', e.target.value)}
@@ -209,12 +210,7 @@ export default function AdminPacksPage() {
               className="relative h-36 w-24 shrink-0 rounded-xl border border-white/10"
               style={{ background: `linear-gradient(145deg, ${p.accentColor}35, transparent)` }}
             >
-              <Image
-                src={p.coverImageUrl ?? ASSET_PRESETS[0]!}
-                alt={p.name}
-                fill
-                className="object-contain p-2"
-              />
+              <PackArt src={p.coverImageUrl ?? ASSET_PRESETS[0]!} alt={p.name} className="h-full" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">

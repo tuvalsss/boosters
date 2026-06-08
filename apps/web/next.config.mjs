@@ -18,16 +18,18 @@ for (let i = 0; i < 8; i++) {
 // Privy lazily references optional Solana submodules (memo program, Farcaster
 // mini-app) that we don't use and that conflict with our @solana/kit version.
 // Treat them as absent so webpack doesn't try to resolve them.
-const OPTIONAL_ABSENT = [
-  '@farcaster/mini-app-solana',
-  '@solana-program/memo',
-  '@stripe/crypto',
-];
+const OPTIONAL_ABSENT = ['@farcaster/mini-app-solana', '@solana-program/memo', '@stripe/crypto'];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@boosters/config'],
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+      { protocol: 'http', hostname: '**' },
+    ],
+  },
   webpack: (config) => {
     config.resolve.alias = { ...config.resolve.alias };
     for (const mod of OPTIONAL_ABSENT) config.resolve.alias[mod] = false;

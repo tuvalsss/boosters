@@ -224,18 +224,18 @@ model User {
   updatedAt       DateTime    @updatedAt
 
   // Relations
-  ownedVaultItems VaultItem[]    @relation("VaultItemOwner")
-  ownedTokens     Token[]        @relation("TokenOwner")
+  ownedVaultItems VaultItem[]     @relation("VaultItemOwner")
+  ownedTokens     Token[]         @relation("TokenOwner")
   submissions     Submission[]
-  listings        Listing[]      @relation("ListingSeller")
+  listings        Listing[]       @relation("ListingSeller")
   packOpenings    PackOpening[]
   raffleTickets   RaffleTicket[]
-  wonRaffles      Raffle[]       @relation("RaffleWinner")
+  wonRaffles      Raffle[]        @relation("RaffleWinner")
   buybackQuotes   BuybackQuote[]
-  buyOrders       Order[]        @relation("OrderBuyer")
-  sellOrders      Order[]        @relation("OrderSeller")
+  buyOrders       Order[]         @relation("OrderBuyer")
+  sellOrders      Order[]         @relation("OrderSeller")
   ledgerEntries   LedgerEntry[]
-  auditLogs       AuditLog[]     @relation("AuditActor")
+  auditLogs       AuditLog[]      @relation("AuditActor")
   redemptions     Redemption[]
   kycSubmissions  KycSubmission[]
 
@@ -244,19 +244,19 @@ model User {
 }
 
 model KycSubmission {
-  id             String                  @id @default(cuid())
-  userId         String
-  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status         KycStatus               @default(PENDING)
-  documentType   KycIdentityDocumentType
-  legalName      String
-  country        String
-  notes          String?
-  reviewerNotes  String?
-  reviewedById   String?
-  reviewedAt     DateTime?
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
+  id            String                  @id @default(cuid())
+  userId        String
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        KycStatus               @default(PENDING)
+  documentType  KycIdentityDocumentType
+  legalName     String
+  country       String
+  notes         String?
+  reviewerNotes String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
 
   documents KycDocument[]
 
@@ -266,15 +266,15 @@ model KycSubmission {
 }
 
 model KycDocument {
-  id            String          @id @default(cuid())
-  submissionId  String
-  submission    KycSubmission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  type          KycDocumentType
-  fileName      String
-  contentType   String
-  storageKey    String
+  id             String          @id @default(cuid())
+  submissionId   String
+  submission     KycSubmission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  type           KycDocumentType
+  fileName       String
+  contentType    String
+  storageKey     String
   checksumSha256 String
-  createdAt     DateTime        @default(now())
+  createdAt      DateTime        @default(now())
 
   @@index([submissionId])
   @@index([type])
@@ -285,22 +285,22 @@ model KycDocument {
 // ----------------------------------------------------------------------------
 
 model PhysicalCard {
-  id          String       @id @default(cuid())
-  category    CardCategory
-  grader      Grader
+  id         String       @id @default(cuid())
+  category   CardCategory
+  grader     Grader
   // Grader certificate number; unique per grader. Verified during intake.
-  certNumber  String?
-  grade       String? // e.g. "10", "9.5", "PSA 10 GEM MT"
-  setName     String?
-  cardName    String
-  year        Int?
+  certNumber String?
+  grade      String? // e.g. "10", "9.5", "PSA 10 GEM MT"
+  setName    String?
+  cardName   String
+  year       Int?
   // Free-form structured attributes (variant, language, population, etc.)
-  attributes  Json         @default("{}")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  attributes Json         @default("{}")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
-  photos    CardPhoto[]
-  vaultItem VaultItem?
+  photos       CardPhoto[]
+  vaultItem    VaultItem?
   fmvSnapshots FmvSnapshot[]
 
   @@unique([grader, certNumber])
@@ -319,6 +319,23 @@ model CardPhoto {
   @@index([physicalCardId])
 }
 
+model ManagedCardCategory {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  name           String
+  legacyCategory CardCategory @default(OTHER)
+  description    String?
+  imageUrl       String?
+  accentColor    String       @default("#22c55e")
+  active         Boolean      @default(true)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([active])
+  @@index([sortOrder])
+}
+
 // The custody record. 1:1 with PhysicalCard. Owner + state drive the gate.
 model VaultItem {
   id             String         @id @default(cuid())
@@ -334,14 +351,14 @@ model VaultItem {
 
   // 1:1 token (custody gate). Optional because the token is minted only at
   // GRADED->VAULTED; a VaultItem may briefly exist pre-mint.
-  token       Token?
-  listings    Listing[]
-  submission  Submission?
-  packPoolItem PackPoolItem?
-  raffle      Raffle?
+  token         Token?
+  listings      Listing[]
+  submission    Submission?
+  packPoolItem  PackPoolItem?
+  raffle        Raffle?
   buybackQuotes BuybackQuote[]
-  fmvSnapshots FmvSnapshot[]
-  redemption  Redemption?
+  fmvSnapshots  FmvSnapshot[]
+  redemption    Redemption?
 
   @@index([ownerId])
   @@index([state])
@@ -372,22 +389,22 @@ model Redemption {
 
 // On-chain representation. Bubblegum compressed NFT. 1:1 with VaultItem.
 model Token {
-  id           String      @id @default(cuid())
-  vaultItemId  String      @unique
-  vaultItem    VaultItem   @relation(fields: [vaultItemId], references: [id], onDelete: Restrict)
+  id            String      @id @default(cuid())
+  vaultItemId   String      @unique
+  vaultItem     VaultItem   @relation(fields: [vaultItemId], references: [id], onDelete: Restrict)
   // Helius DAS asset id for the cNFT.
-  cnftAssetId  String      @unique
-  merkleTree   String
-  leafIndex    Int
-  mintSignature String     @unique
-  metadataUri  String?
-  ownerId      String
-  owner        User        @relation("TokenOwner", fields: [ownerId], references: [id])
-  status       TokenStatus @default(ACTIVE)
-  burnSignature String?    @unique
-  burnedAt     DateTime?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  cnftAssetId   String      @unique
+  merkleTree    String
+  leafIndex     Int
+  mintSignature String      @unique
+  metadataUri   String?
+  ownerId       String
+  owner         User        @relation("TokenOwner", fields: [ownerId], references: [id])
+  status        TokenStatus @default(ACTIVE)
+  burnSignature String?     @unique
+  burnedAt      DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([ownerId])
   @@index([status])
@@ -398,20 +415,20 @@ model Token {
 // ----------------------------------------------------------------------------
 
 model Submission {
-  id              String           @id @default(cuid())
-  userId          String
-  user            User             @relation(fields: [userId], references: [id])
-  status          SubmissionStatus @default(DRAFT)
+  id               String           @id @default(cuid())
+  userId           String
+  user             User             @relation(fields: [userId], references: [id])
+  status           SubmissionStatus @default(DRAFT)
   // What the user declared they are shipping (pre-authentication).
-  declaredCard    Json             @default("{}")
+  declaredCard     Json             @default("{}")
   shippingLabelUrl String?
-  trackingNumber  String?
+  trackingNumber   String?
   // Set once the physical is received + vaulted; mint targets this owner.
-  vaultItemId     String?          @unique
-  vaultItem       VaultItem?       @relation(fields: [vaultItemId], references: [id])
-  rejectionReason String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  vaultItemId      String?          @unique
+  vaultItem        VaultItem?       @relation(fields: [vaultItemId], references: [id])
+  rejectionReason  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   events SubmissionEvent[]
 
@@ -465,19 +482,19 @@ model Listing {
 // ----------------------------------------------------------------------------
 
 model Pack {
-  id             String     @id @default(cuid())
-  name           String
-  description    String?
-  priceUsdc      Decimal    @db.Decimal(18, 6)
-  brandLabel     String     @default("BOOSTERS")
-  coverImageUrl  String?
-  accentColor    String     @default("#22c55e")
-  tier           String     @default("CORE")
+  id            String     @id @default(cuid())
+  name          String
+  description   String?
+  priceUsdc     Decimal    @db.Decimal(18, 6)
+  brandLabel    String     @default("BOOSTERS")
+  coverImageUrl String?
+  accentColor   String     @default("#22c55e")
+  tier          String     @default("CORE")
   // Tier/odds configuration; probabilities must sum to 1 (validated in app).
-  oddsConfig     Json       @default("{}")
-  status         PackStatus @default(DRAFT)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  oddsConfig    Json       @default("{}")
+  status        PackStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   poolItems PackPoolItem[]
   openings  PackOpening[]
@@ -500,30 +517,35 @@ model PackPoolItem {
 }
 
 model PackOpening {
-  id              String            @id @default(cuid())
-  packId          String
-  pack            Pack              @relation(fields: [packId], references: [id])
-  userId          String
-  user            User              @relation(fields: [userId], references: [id])
+  id                 String            @id @default(cuid())
+  packId             String
+  pack               Pack              @relation(fields: [packId], references: [id])
+  userId             String
+  user               User              @relation(fields: [userId], references: [id])
   // Commit-reveal: hash published before, seed revealed after.
-  serverSeedHash  String
-  serverSeed      String?
-  clientSeed      String
-  nonce           Int               @default(0)
+  serverSeedHash     String
+  serverSeed         String?
+  clientSeed         String
+  nonce              Int               @default(0)
   // VRF (ORAO/Switchboard) proof + on-chain request reference.
-  vrfRequest      String?
-  vrfProof        String?
+  vrfRequest         String?
+  vrfProof           String?
+  randomnessProvider String            @default("commit-reveal")
+  fairnessCommitTx   String?
+  fairnessRevealTx   String?
   // Reproducible draw record: { algorithm, candidates:[{poolItemId,vaultItemId,weight}],
   // floatHex, float, index } so anyone can replay the result on the verify page.
-  proof           Json              @default("{}")
-  resultVaultItemId String?         @unique
-  status          PackOpeningStatus @default(COMMITTED)
-  orderId         String?           @unique
-  createdAt       DateTime          @default(now())
-  revealedAt      DateTime?
+  proof              Json              @default("{}")
+  resultVaultItemId  String?           @unique
+  status             PackOpeningStatus @default(COMMITTED)
+  orderId            String?           @unique
+  createdAt          DateTime          @default(now())
+  revealedAt         DateTime?
 
   @@index([packId])
   @@index([userId])
+  @@index([randomnessProvider])
+  @@index([fairnessCommitTx])
 }
 
 // ----------------------------------------------------------------------------
@@ -531,20 +553,20 @@ model PackOpening {
 // ----------------------------------------------------------------------------
 
 model Raffle {
-  id             String       @id @default(cuid())
-  vaultItemId    String       @unique
-  vaultItem      VaultItem    @relation(fields: [vaultItemId], references: [id])
-  ticketSupply   Int
-  ticketsSold    Int          @default(0)
-  ticketPriceUsdc Decimal     @db.Decimal(18, 6)
-  status         RaffleStatus @default(DRAFT)
-  vrfRequest     String?
-  vrfProof       String?
-  winnerId       String?
-  winner         User?        @relation("RaffleWinner", fields: [winnerId], references: [id])
-  drawnAt        DateTime?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  vaultItemId     String       @unique
+  vaultItem       VaultItem    @relation(fields: [vaultItemId], references: [id])
+  ticketSupply    Int
+  ticketsSold     Int          @default(0)
+  ticketPriceUsdc Decimal      @db.Decimal(18, 6)
+  status          RaffleStatus @default(DRAFT)
+  vrfRequest      String?
+  vrfProof        String?
+  winnerId        String?
+  winner          User?        @relation("RaffleWinner", fields: [winnerId], references: [id])
+  drawnAt         DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   tickets RaffleTicket[]
 
@@ -595,24 +617,24 @@ model BuybackQuote {
 // ----------------------------------------------------------------------------
 
 model Order {
-  id              String      @id @default(cuid())
-  type            OrderType
-  status          OrderStatus @default(PENDING)
-  buyerId         String?
-  buyer           User?       @relation("OrderBuyer", fields: [buyerId], references: [id])
-  sellerId        String?
-  seller          User?       @relation("OrderSeller", fields: [sellerId], references: [id])
-  listingId       String?
-  listing         Listing?    @relation(fields: [listingId], references: [id])
-  amountUsdc      Decimal     @db.Decimal(18, 6)
-  feeUsdc         Decimal     @default(0) @db.Decimal(18, 6)
+  id               String      @id @default(cuid())
+  type             OrderType
+  status           OrderStatus @default(PENDING)
+  buyerId          String?
+  buyer            User?       @relation("OrderBuyer", fields: [buyerId], references: [id])
+  sellerId         String?
+  seller           User?       @relation("OrderSeller", fields: [sellerId], references: [id])
+  listingId        String?
+  listing          Listing?    @relation(fields: [listingId], references: [id])
+  amountUsdc       Decimal     @db.Decimal(18, 6)
+  feeUsdc          Decimal     @default(0) @db.Decimal(18, 6)
   // Idempotency: every money mutation carries a unique key so retries are safe.
-  idempotencyKey  String      @unique
+  idempotencyKey   String      @unique
   // On-chain settlement signature, when applicable.
-  onchainSignature String?    @unique
-  metadata        Json        @default("{}")
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  onchainSignature String?     @unique
+  metadata         Json        @default("{}")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   ledgerEntries LedgerEntry[]
 

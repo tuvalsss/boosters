@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Branch } from '@/lib/branches';
+import { PackArt } from './pack-art';
 
 /** Open-Packs grid tile: a graded card peeking out behind a booster pack. */
 export function PackTile({ branch }: { branch: Branch }) {
@@ -19,12 +20,10 @@ export function PackTile({ branch }: { branch: Branch }) {
           className="absolute bottom-6 h-44 w-auto -rotate-6 rounded-lg opacity-90 shadow-lg transition group-hover:-translate-y-2"
         />
         {/* pack in front */}
-        <Image
+        <PackArt
           src={branch.packImage}
           alt={`${branch.name} pack`}
-          width={600}
-          height={900}
-          className="relative h-52 w-auto rounded-xl shadow-2xl transition group-hover:-translate-y-1"
+          className="relative h-52 transition group-hover:-translate-y-1"
         />
       </div>
       <div className="mt-4 flex items-center justify-between">

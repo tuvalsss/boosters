@@ -172,6 +172,88 @@ body {
   animation: carousel-breathe 3.8s ease-in-out infinite;
 }
 
+.pack-art-shell {
+  border-radius: 1.15rem;
+  filter: drop-shadow(0 1.25rem 1.6rem rgba(0, 0, 0, 0.42));
+  isolation: isolate;
+}
+
+.pack-art-shell::before {
+  position: absolute;
+  inset: 0.45rem 0.28rem;
+  z-index: 12;
+  pointer-events: none;
+  content: '';
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.9rem;
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, 0.08),
+    inset 0 -26px 38px rgba(0, 0, 0, 0.18);
+}
+
+.pack-art-crimp {
+  position: absolute;
+  left: 0;
+  z-index: 13;
+  width: 100%;
+  height: 1.05rem;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.12)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.24) 0 0.45rem,
+      rgba(0, 0, 0, 0.2) 0.45rem 0.9rem
+    );
+  opacity: 0.8;
+}
+
+.pack-art-crimp-top {
+  top: 0;
+}
+
+.pack-art-crimp-bottom {
+  bottom: 0;
+  transform: rotate(180deg);
+}
+
+.pack-art-side {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  z-index: 13;
+  width: 0.35rem;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.2));
+  opacity: 0.7;
+}
+
+.pack-art-side-left {
+  left: 0;
+}
+
+.pack-art-side-right {
+  right: 0;
+  transform: rotate(180deg);
+}
+
+.pack-art-shine {
+  position: absolute;
+  inset: -22% 24% -10% 38%;
+  z-index: 14;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 0 28%,
+    rgba(255, 255, 255, 0.34) 42%,
+    rgba(255, 255, 255, 0.08) 52%,
+    transparent 68% 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0.62;
+  transform: rotate(8deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-pack-pop,
   .pack-rip-left.is-opening,

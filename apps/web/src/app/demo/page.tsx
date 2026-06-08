@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon, BoltIcon, LayersIcon, SparkleIcon, TrophyIcon } from '@/components/icons';
+import { PackArt } from '@/components/pack-art';
 import { useI18n } from '@/i18n/language-context';
 import { BRANCHES, type Branch } from '@/lib/branches';
 import { useAuth } from '@/lib/auth-context';
@@ -268,15 +269,14 @@ function PackCarousel({
                 style={{ background: `linear-gradient(145deg, ${branch.accent}35, transparent)` }}
               />
               <span className="relative mx-auto flex h-28 items-center justify-center">
-                <Image
+                <PackArt
                   src={branch.packImage}
                   alt=""
-                  width={240}
-                  height={360}
                   className={[
-                    'h-28 w-auto rounded-lg drop-shadow-xl transition group-hover:-translate-y-1',
+                    'h-28 transition group-hover:-translate-y-1',
                     active ? 'carousel-breathe' : '',
                   ].join(' ')}
+                  imageClassName="drop-shadow-xl"
                   style={{ animationDelay: `${index * 0.15}s` }}
                 />
               </span>

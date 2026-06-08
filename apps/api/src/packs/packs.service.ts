@@ -13,6 +13,7 @@ import { AuditService } from '../audit/audit.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { CNFT_TRANSFERRER, type CnftTransferrer } from '../marketplace/cnft-transferrer.js';
 import { commitmentHash, draw, DRAW_ALGORITHM, type PoolCandidate } from './pack-fairness.js';
+import { FairnessAnchorService } from './fairness-anchor.service.js';
 
 interface OddsConfig {
   weights?: Record<string, number>;
@@ -35,6 +36,7 @@ export class PacksService {
     @Inject(CNFT_TRANSFERRER) private readonly transferrer: CnftTransferrer,
     private readonly ledger: LedgerService,
     private readonly audit: AuditService,
+    private readonly fairnessAnchor: FairnessAnchorService,
   ) {}
 
   private weightOf(odds: OddsConfig, tier: string | null): number {
@@ -228,6 +230,14 @@ export class PacksService {
     const serverSeed = randomBytes(32).toString('hex');
     const serverSeedHash = commitmentHash(serverSeed);
     const seed = clientSeed?.trim() || randomBytes(8).toString('hex');
+    const openingId = randomUUID();
+    const fairnessCommitTx = await this.fairnessAnchor.anchorCommit({
+      openingId,
+      packId,
+      userId: user.id,
+      serverSeedHash,
+      clientSeed: seed,
+    });
 
     const opening = await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
@@ -256,11 +266,14 @@ export class PacksService {
       ]);
       return tx.packOpening.create({
         data: {
+          id: openingId,
           packId,
           userId: user.id,
           serverSeed, // stored hidden; revealed at draw
           serverSeedHash,
           clientSeed: seed,
+          randomnessProvider: fairnessCommitTx ? 'commit-reveal+solana-memo' : 'commit-reveal',
+          fairnessCommitTx,
           status: 'COMMITTED',
           orderId: order.id,
         },
@@ -272,7 +285,7 @@ export class PacksService {
       entityType: 'PackOpening',
       entityId: opening.id,
       action: 'PACK_COMMITTED',
-      metadata: { packId, serverSeedHash },
+      metadata: { packId, serverSeedHash, fairnessCommitTx },
     });
     // Never leak the server seed before reveal.
     return { ...opening, serverSeed: null };
@@ -351,14 +364,38 @@ export class PacksService {
       this.logger.error(`Pack on-chain transfer deferred: ${(err as Error).message}`);
     }
 
+    const fairnessRevealTx = await this.fairnessAnchor.anchorReveal({
+      openingId,
+      packId: opening.packId,
+      userId: user.id,
+      serverSeedHash: opening.serverSeedHash,
+      serverSeed: opening.serverSeed!,
+      clientSeed: finalClientSeed,
+      resultVaultItemId: result.winner.vaultItemId,
+      floatHex: result.floatHex,
+      algorithm: DRAW_ALGORITHM,
+    });
+
     await this.audit.log({
       actorId: user.id,
       entityType: 'PackOpening',
       entityId: openingId,
       action: 'PACK_REVEALED',
-      metadata: { resultVaultItemId: result.winner.vaultItemId, floatHex: result.floatHex },
+      metadata: {
+        resultVaultItemId: result.winner.vaultItemId,
+        floatHex: result.floatHex,
+        fairnessRevealTx,
+      },
     });
-    return settled;
+
+    if (!fairnessRevealTx) return settled;
+    return this.prisma.packOpening.update({
+      where: { id: openingId },
+      data: {
+        randomnessProvider: 'commit-reveal+solana-memo',
+        fairnessRevealTx,
+      },
+    });
   }
 
   private async candidatesFor(packId: string): Promise<PoolCandidate[]> {
@@ -397,6 +434,11 @@ export class PacksService {
       serverSeed: revealed ? opening.serverSeed : null, // only after reveal
       clientSeed: opening.clientSeed,
       nonce: opening.nonce,
+      randomnessProvider: opening.randomnessProvider,
+      fairnessCommitTx: opening.fairnessCommitTx,
+      fairnessRevealTx: opening.fairnessRevealTx,
+      vrfRequest: opening.vrfRequest,
+      vrfProof: opening.vrfProof,
       proof: opening.proof,
       resultVaultItemId: opening.resultVaultItemId,
       result,

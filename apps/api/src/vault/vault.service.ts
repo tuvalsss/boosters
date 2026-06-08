@@ -12,7 +12,7 @@ import { ENV } from '../config/config.module.js';
 import { PRISMA } from '../prisma/prisma.module.js';
 import { AuditService } from '../audit/audit.service.js';
 import { CNFT_MINTER, type CnftMinter } from './cnft-minter.js';
-import type { CreateIntakeDto } from './vault.dto.js';
+import type { CreateIntakeDto, ManagedCategoryDto, UpdateCardDto } from './vault.dto.js';
 
 /**
  * Allowed vault state transitions (spec §5). Anything not listed here is
@@ -84,6 +84,67 @@ export class VaultService {
     return item;
   }
 
+  // ---- Managed card categories ---------------------------------------------
+
+  async listCategories(includeInactive = true) {
+    return this.prisma.managedCardCategory.findMany({
+      where: includeInactive ? {} : { active: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+  }
+
+  async createCategory(actor: User, dto: ManagedCategoryDto) {
+    const slug = normaliseSlug(dto.slug || dto.name);
+    const category = await this.prisma.managedCardCategory.create({
+      data: {
+        slug,
+        name: dto.name.trim(),
+        legacyCategory: dto.legacyCategory,
+        description: dto.description?.trim() || null,
+        imageUrl: dto.imageUrl?.trim() || null,
+        accentColor: dto.accentColor?.trim() || '#22c55e',
+        active: dto.active ?? true,
+        sortOrder: dto.sortOrder ?? 0,
+      },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'ManagedCardCategory',
+      entityId: category.id,
+      action: 'CATEGORY_CREATED',
+      metadata: { slug: category.slug, legacyCategory: category.legacyCategory },
+    });
+    return category;
+  }
+
+  async updateCategory(actor: User, id: string, dto: Partial<ManagedCategoryDto>) {
+    const existing = await this.prisma.managedCardCategory.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Category not found');
+    const category = await this.prisma.managedCardCategory.update({
+      where: { id },
+      data: {
+        ...(dto.slug !== undefined ? { slug: normaliseSlug(dto.slug || dto.name || '') } : {}),
+        ...(dto.name !== undefined ? { name: dto.name.trim() } : {}),
+        ...(dto.legacyCategory !== undefined ? { legacyCategory: dto.legacyCategory } : {}),
+        ...(dto.description !== undefined ? { description: dto.description.trim() || null } : {}),
+        ...(dto.imageUrl !== undefined ? { imageUrl: dto.imageUrl.trim() || null } : {}),
+        ...(dto.accentColor !== undefined
+          ? { accentColor: dto.accentColor.trim() || '#22c55e' }
+          : {}),
+        ...(dto.active !== undefined ? { active: dto.active } : {}),
+        ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
+      },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'ManagedCardCategory',
+      entityId: category.id,
+      action: 'CATEGORY_UPDATED',
+      metadata: { slug: category.slug, active: category.active },
+    });
+    return category;
+  }
+
   // ---- State machine --------------------------------------------------------
 
   async findItem(id: string) {
@@ -93,6 +154,54 @@ export class VaultService {
     });
     if (!item) throw new NotFoundException('Vault item not found');
     return item;
+  }
+
+  async updateCard(actor: User, id: string, dto: UpdateCardDto) {
+    const item = await this.findItem(id);
+    const cardData: Prisma.PhysicalCardUpdateInput = {
+      ...(dto.category !== undefined ? { category: dto.category } : {}),
+      ...(dto.grader !== undefined ? { grader: dto.grader } : {}),
+      ...(dto.cardName !== undefined ? { cardName: dto.cardName.trim() } : {}),
+      ...(dto.setName !== undefined ? { setName: dto.setName.trim() || null } : {}),
+      ...(dto.year !== undefined ? { year: dto.year } : {}),
+      ...(dto.certNumber !== undefined ? { certNumber: dto.certNumber.trim() || null } : {}),
+      ...(dto.grade !== undefined ? { grade: dto.grade.trim() || null } : {}),
+      ...(dto.attributes !== undefined
+        ? { attributes: dto.attributes as Prisma.InputJsonValue }
+        : {}),
+    };
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.physicalCard.update({ where: { id: item.physicalCardId }, data: cardData });
+      if (dto.photos) {
+        await tx.cardPhoto.deleteMany({ where: { physicalCardId: item.physicalCardId } });
+        if (dto.photos.length) {
+          await tx.cardPhoto.createMany({
+            data: dto.photos.map((p) => ({
+              physicalCardId: item.physicalCardId,
+              url: p.url,
+              kind: p.kind ?? 'front',
+            })),
+          });
+        }
+      }
+      return tx.vaultItem.findUniqueOrThrow({
+        where: { id },
+        include: { physicalCard: { include: { photos: true } }, owner: true, token: true },
+      });
+    });
+
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'VaultItem',
+      entityId: id,
+      action: 'CARD_UPDATED',
+      metadata: {
+        cardName: updated.physicalCard.cardName,
+        photos: updated.physicalCard.photos.length,
+      },
+    });
+    return updated;
   }
 
   private assertTransition(from: VaultItemState, to: VaultItemState) {
@@ -236,7 +345,7 @@ export class VaultService {
     const [items, total] = await Promise.all([
       this.prisma.vaultItem.findMany({
         where,
-        include: { physicalCard: true, owner: true, token: true },
+        include: { physicalCard: { include: { photos: true } }, owner: true, token: true },
         orderBy: { createdAt: 'desc' },
         take: Math.min(take, 100),
         skip,
@@ -245,4 +354,14 @@ export class VaultService {
     ]);
     return { items, total };
   }
+}
+
+function normaliseSlug(value: string): string {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!slug) throw new BadRequestException('Category slug is required');
+  return slug;
 }

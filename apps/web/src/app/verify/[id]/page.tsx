@@ -7,8 +7,7 @@ import type { VerifyOpening } from '@/lib/types';
 
 /**
  * Public provably-fair verification. Reproduces the draw in-browser from the
- * revealed opening record and confirms it matches the recorded result —
- * including checking sha256(serverSeed) === the published commitment.
+ * revealed opening record and confirms it matches the recorded result.
  */
 export default function VerifyPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,14 +20,12 @@ export default function VerifyPage() {
     const reasons: string[] = [];
     const enc = new TextEncoder();
 
-    // 1) Commitment: sha256(serverSeed) === serverSeedHash
     const hashBuf = await crypto.subtle.digest('SHA-256', enc.encode(o.serverSeed));
     const hashHex = [...new Uint8Array(hashBuf)]
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
     if (hashHex !== o.serverSeedHash) reasons.push('serverSeed does not match the commitment hash');
 
-    // 2) Draw: HMAC-SHA256(serverSeed, `${clientSeed}:${nonce}`) → weighted pick
     const key = await crypto.subtle.importKey(
       'raw',
       enc.encode(o.serverSeed),
@@ -67,13 +64,14 @@ export default function VerifyPage() {
   }, [id, verify]);
 
   if (err) return <Center>{err}</Center>;
-  if (!op) return <Center>Loading…</Center>;
+  if (!op) return <Center>Loading...</Center>;
+  const cluster = process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? 'devnet';
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight">Verify draw</h1>
       <p className="text-sm text-white/55">
-        Pack: {op.pack?.name} · Opening {op.id}
+        Pack: {op.pack?.name} / Opening {op.id}
       </p>
 
       {op.status !== 'SETTLED' && op.status !== 'REVEALED' ? (
@@ -94,9 +92,9 @@ export default function VerifyPage() {
             <p className="text-lg font-semibold">
               {check
                 ? check.ok
-                  ? '✓ Verified — result is provably fair'
-                  : '✗ Verification failed'
-                : 'Verifying…'}
+                  ? 'Verified - result is provably fair'
+                  : 'Verification failed'
+                : 'Verifying...'}
             </p>
             {check && !check.ok && (
               <ul className="mt-2 list-disc pl-5 text-sm text-red-300">
@@ -111,14 +109,27 @@ export default function VerifyPage() {
           </div>
 
           <dl className="mt-6 space-y-3 text-sm">
-            <Row k="Result" v={op.result?.physicalCard.cardName ?? op.resultVaultItemId ?? '—'} />
-            <Row k="Algorithm" v={op.proof?.algorithm ?? '—'} mono />
+            <Row k="Result" v={op.result?.physicalCard.cardName ?? op.resultVaultItemId ?? '-'} />
+            <Row k="Algorithm" v={op.proof?.algorithm ?? '-'} mono />
+            <Row k="Randomness provider" v={op.randomnessProvider ?? 'commit-reveal'} mono />
+            <Row
+              k="Solana commit tx"
+              v={op.fairnessCommitTx ?? 'Not anchored'}
+              mono
+              href={op.fairnessCommitTx ? explorerUrl(op.fairnessCommitTx, cluster) : undefined}
+            />
+            <Row
+              k="Solana reveal tx"
+              v={op.fairnessRevealTx ?? 'Not anchored'}
+              mono
+              href={op.fairnessRevealTx ? explorerUrl(op.fairnessRevealTx, cluster) : undefined}
+            />
             <Row k="Server seed hash (committed before)" v={op.serverSeedHash} mono />
-            <Row k="Server seed (revealed after)" v={op.serverSeed ?? '—'} mono />
+            <Row k="Server seed (revealed after)" v={op.serverSeed ?? '-'} mono />
             <Row k="Client seed" v={op.clientSeed} mono />
             <Row k="Nonce" v={String(op.nonce)} mono />
-            <Row k="Entropy (HMAC head)" v={op.proof?.floatHex ?? '—'} mono />
-            <Row k="Float" v={op.proof?.float != null ? op.proof.float.toFixed(8) : '—'} mono />
+            <Row k="Entropy (HMAC head)" v={op.proof?.floatHex ?? '-'} mono />
+            <Row k="Float" v={op.proof?.float != null ? op.proof.float.toFixed(8) : '-'} mono />
           </dl>
         </>
       )}
@@ -126,13 +137,26 @@ export default function VerifyPage() {
   );
 }
 
-function Row({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
+function Row({ k, v, mono, href }: { k: string; v: string; mono?: boolean; href?: string }) {
   return (
     <div className="grid grid-cols-[180px_1fr] gap-3 border-b border-white/5 pb-2">
       <dt className="text-white/45">{k}</dt>
-      <dd className={`break-all ${mono ? 'font-mono text-xs' : ''}`}>{v}</dd>
+      <dd className={`break-all ${mono ? 'font-mono text-xs' : ''}`}>
+        {href ? (
+          <a href={href} target="_blank" rel="noreferrer" className="text-emerald-200 underline">
+            {v}
+          </a>
+        ) : (
+          v
+        )}
+      </dd>
     </div>
   );
+}
+
+function explorerUrl(signature: string, cluster: string): string {
+  const clusterQuery = cluster === 'mainnet-beta' ? '' : `?cluster=${cluster}`;
+  return `https://explorer.solana.com/tx/${signature}${clusterQuery}`;
 }
 
 function Center({ children }: { children: React.ReactNode }) {

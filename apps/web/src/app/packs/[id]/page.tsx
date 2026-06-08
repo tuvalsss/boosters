@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { publicFetch, usd } from '@/lib/api';
@@ -10,6 +9,7 @@ import { BRANCHES } from '@/lib/branches';
 import type { PackDetail, PackOpening, VerifyOpening } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { ArrowRightIcon } from '@/components/icons';
+import { PackArt } from '@/components/pack-art';
 
 type Phase = 'idle' | 'opening' | 'done';
 
@@ -21,6 +21,7 @@ export default function PackDetailPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [won, setWon] = useState<VerifyOpening | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [commitment, setCommitment] = useState<PackOpening | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -36,7 +37,7 @@ export default function PackDetailPage() {
   }, [load]);
 
   if (err) return <Center>{err}</Center>;
-  if (!pack) return <Center>Loading…</Center>;
+  if (!pack) return <Center>Loading...</Center>;
 
   const packImage =
     pack.coverImageUrl ?? BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!.packImage;
@@ -44,6 +45,8 @@ export default function PackDetailPage() {
   const open = async () => {
     if (!authenticated) return login();
     setErr(null);
+    setWon(null);
+    setCommitment(null);
     setPhase('opening');
     try {
       const committed = await apiFetch<PackOpening>(`/packs/${id}/open`, {
@@ -51,7 +54,7 @@ export default function PackDetailPage() {
         body: JSON.stringify({}),
       });
       setOpeningId(committed.id);
-      // Brief suspense while the (already-committed) draw settles.
+      setCommitment(committed);
       await new Promise((r) => setTimeout(r, 1400));
       await apiFetch<PackOpening>(`/packs/openings/${committed.id}/reveal`, {
         method: 'POST',
@@ -71,22 +74,22 @@ export default function PackDetailPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 lg:px-8">
       <Link href="/packs" className="text-sm text-white/50 hover:text-white">
-        ← All packs
+        Back to all packs
       </Link>
 
       <div className="mt-4 flex flex-col items-center text-center">
         <div
           className={[
-            'relative h-72 w-48 transition',
+            'relative flex h-72 w-48 justify-center transition',
             phase === 'opening' ? 'animate-pack-pop' : '',
           ].join(' ')}
         >
-          <Image src={packImage} alt={pack.name} fill className="object-contain drop-shadow-2xl" />
+          <PackArt src={packImage} alt={pack.name} className="h-72" />
         </div>
         <h1 className="mt-4 text-3xl font-bold tracking-tight">{pack.name}</h1>
         {pack.description && <p className="mt-2 max-w-lg text-white/55">{pack.description}</p>}
         <p className="text-white/55">
-          {pack.remaining} cards left · {usd(pack.priceUsdc)}
+          {pack.remaining} cards left / {usd(pack.priceUsdc)}
         </p>
 
         {phase !== 'done' && (
@@ -96,7 +99,7 @@ export default function PackDetailPage() {
             className="mt-6 rounded-full bg-white px-10 py-3.5 text-sm font-semibold text-black hover:bg-white/90 disabled:opacity-60"
           >
             {phase === 'opening'
-              ? 'Opening…'
+              ? 'Opening...'
               : pack.remaining === 0
                 ? t('packs.soldOut')
                 : authenticated
@@ -113,6 +116,21 @@ export default function PackDetailPage() {
           </Link>
         )}
         {err && <p className="mt-4 text-sm text-red-300">{err}</p>}
+        {(phase === 'opening' || phase === 'done') && <RealPrizeReel pack={pack} phase={phase} />}
+        {phase === 'opening' && commitment && (
+          <div className="mt-5 w-full max-w-xl rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-200/70">
+              Seed committed before reveal
+            </p>
+            <p className="mt-2 break-all font-mono text-xs text-white/65">
+              {commitment.serverSeedHash}
+            </p>
+            <p className="mt-2 text-xs text-white/40">
+              Provider: {commitment.randomnessProvider ?? 'commit-reveal'}
+              {commitment.fairnessCommitTx ? ' / Solana memo anchored' : ' / local commit'}
+            </p>
+          </div>
+        )}
       </div>
 
       {phase === 'done' && won && (
@@ -141,7 +159,6 @@ export default function PackDetailPage() {
         </div>
       )}
 
-      {/* Transparent odds */}
       <h3 className="mb-2 mt-10 text-sm font-semibold uppercase tracking-wide text-white/50">
         Pool &amp; odds
       </h3>
@@ -165,6 +182,45 @@ export default function PackDetailPage() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function RealPrizeReel({ pack, phase }: { pack: PackDetail; phase: Phase }) {
+  const available = pack.pool.filter((p) => !p.consumed);
+  const source = available.length ? available : pack.pool;
+  const items = Array.from({ length: 8 }, () => source).flat();
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="relative mt-6 w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-black/60 py-3 shadow-2xl">
+      <div className="pointer-events-none absolute inset-y-0 left-1/2 z-20 w-px -translate-x-1/2 bg-emerald-200 shadow-[0_0_22px_rgba(110,231,183,0.9)]" />
+      <div
+        className={[
+          'roulette-track flex gap-3 pl-[calc(50%-4.5rem)]',
+          phase === 'done' ? 'is-idle' : '',
+        ].join(' ')}
+        style={{ transform: phase === 'opening' ? 'translateX(-58rem)' : 'translateX(-18rem)' }}
+      >
+        {items.map((entry, index) => (
+          <div
+            key={`${entry.poolItemId}-${index}`}
+            className="w-36 shrink-0 rounded-xl border border-white/10 bg-white/[0.06] p-3 text-left"
+          >
+            <p className="truncate text-xs font-bold text-white">{entry.card.cardName}</p>
+            <p className="mt-1 truncate text-[11px] text-white/45">
+              {entry.card.grader} {entry.card.grade ?? ''} / {entry.tier ?? 'default'}
+            </p>
+            <p className="mt-2 text-[11px] font-semibold text-emerald-200">
+              {entry.consumed ? 'pulled' : `${entry.oddsPct}% odds`}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-center text-[11px] font-semibold uppercase tracking-widest text-white/35">
+        {phase === 'opening' ? 'Roulette is landing' : 'Result settled'}
+      </p>
     </div>
   );
 }

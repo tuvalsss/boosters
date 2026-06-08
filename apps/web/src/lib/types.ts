@@ -56,6 +56,8 @@ export interface VaultItemRow {
     grade: string | null;
     setName: string | null;
     certNumber: string | null;
+    year?: number | null;
+    photos?: { url: string; kind: string }[];
   };
   owner: { id: string; email: string | null; walletAddress: string | null };
   token: { cnftAssetId: string; mintSignature: string } | null;
@@ -165,6 +167,11 @@ export interface PackOpening {
   serverSeed: string | null;
   clientSeed: string;
   nonce: number;
+  randomnessProvider?: string;
+  fairnessCommitTx?: string | null;
+  fairnessRevealTx?: string | null;
+  vrfRequest?: string | null;
+  vrfProof?: string | null;
   resultVaultItemId: string | null;
 }
 

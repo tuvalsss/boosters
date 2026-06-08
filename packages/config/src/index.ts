@@ -44,6 +44,17 @@ export const envSchema = z.object({
   HELIUS_API_KEY: z.string().optional(),
   HELIUS_RPC_URL: z.string().optional(),
 
+  // Provably-fair pack openings. `commit-reveal` is the production baseline:
+  // publish a server-seed hash before draw, reveal the seed after draw, and
+  // optionally anchor both events on Solana via the Memo program. `switchboard`
+  // is reserved for a future fully on-chain VRF settlement flow.
+  RANDOMNESS_PROVIDER: z.enum(['commit-reveal', 'switchboard']).default('commit-reveal'),
+  FAIRNESS_ANCHOR_ENABLED: boolFromEnv.default(true),
+  FAIRNESS_ANCHOR_REQUIRED: boolFromEnv.default(false),
+  // Fee-payer used only for Solana Memo proof transactions. Base58 secret key or
+  // JSON byte array. Optional so local builds run without secrets.
+  FAIRNESS_ANCHOR_SECRET: z.string().optional(),
+
   // Metaplex Bubblegum (cNFT mint). Required at runtime to vault/mint; optional
   // at schema level so non-minting work and tooling run without secrets.
   // MINT_AUTHORITY_SECRET: base58 secret key OR JSON array of bytes.

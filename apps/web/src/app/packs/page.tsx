@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { publicFetch, usd } from '@/lib/api';
 import { BRANCHES } from '@/lib/branches';
@@ -9,6 +8,7 @@ import type { PackListItem } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { ArrowRightIcon } from '@/components/icons';
 import { useAuth } from '@/lib/auth-context';
+import { PackArt } from '@/components/pack-art';
 
 export default function PacksPage() {
   const { t } = useI18n();
@@ -85,12 +85,11 @@ export default function PacksPage() {
               className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20"
               style={{ background: `linear-gradient(145deg, ${p.accentColor}22, transparent)` }}
             >
-              <div className="relative mx-auto h-44 w-28">
-                <Image
+              <div className="mx-auto flex h-44 justify-center">
+                <PackArt
                   src={p.coverImageUrl ?? BRANCHES[i % BRANCHES.length]!.packImage}
                   alt={p.name}
-                  fill
-                  className="object-contain transition group-hover:-translate-y-1"
+                  className="h-44 transition group-hover:-translate-y-1"
                 />
               </div>
               <p className="mt-3 truncate text-sm font-semibold">{p.name}</p>
