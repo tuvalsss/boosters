@@ -9,6 +9,7 @@ import type {
   KycStatusResponse,
 } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
+import { GuestConversionPanel } from '@/components/guest-conversion-panel';
 
 const KYC_LABEL: Record<KycStatus, string> = {
   NONE: 'kyc.notStarted',
@@ -24,7 +25,7 @@ const DOCUMENT_TYPES: { value: KycIdentityDocumentType; labelKey: string }[] = [
 ];
 
 export default function AccountPage() {
-  const { ready, authenticated, login, dbUser, refreshMe, apiFetch } = useAuth();
+  const { ready, authenticated, dbUser, refreshMe, apiFetch } = useAuth();
   const { t } = useI18n();
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -38,13 +39,7 @@ export default function AccountPage() {
   if (!authenticated || !dbUser) {
     return (
       <Centered>
-        <p className="mb-4 text-white/70">{t('account.signIn')}</p>
-        <button
-          onClick={login}
-          className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black"
-        >
-          {t('common.login')}
-        </button>
+        <GuestConversionPanel messageKey="guest.account" />
       </Centered>
     );
   }

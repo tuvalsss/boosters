@@ -17,7 +17,8 @@
     "all": "Tudo",
     "pending": "Pendente",
     "approved": "Aprovado",
-    "rejected": "Rejeitado"
+    "rejected": "Rejeitado",
+    "tryDemo": "Testar demo"
   },
   "shell": {
     "sandbox": "Sandbox devnet. Sem fundos ou pagamentos reais.",
@@ -45,7 +46,8 @@
     "adminPacks": "Pacotes (admin)",
     "treasury": "Tesouraria",
     "kyc": "KYC",
-    "reviewQueue": "Fila de revisão"
+    "reviewQueue": "Fila de revisão",
+    "demo": "Demo"
   },
   "home": {
     "mode": "devnet sandbox",
@@ -55,7 +57,9 @@
     "openPacks": "Abrir pacotes",
     "browseMarketplace": "Ver marketplace",
     "instantBuyback": "Recompra 85-90%",
-    "footer": "Modo de teste apenas em devnet. Mainnet e pagamentos reais exigem auditoria."
+    "footer": "Modo de teste apenas em devnet. Mainnet e pagamentos reais exigem auditoria.",
+    "demoNote": "Teste grátis primeiro.",
+    "tryDemo": "Testar demo"
   },
   "packs": {
     "title": "Abrir pacotes",
@@ -65,7 +69,9 @@
     "poolOdds": "Pool e chances",
     "openFor": "Abrir por",
     "soldOut": "Esgotado",
-    "loginToOpen": "Entre para abrir"
+    "loginToOpen": "Entre para abrir",
+    "emptyCta": "Abrir pacote demo",
+    "tryDemo": "Testar demo grátis"
   },
   "account": {
     "title": "Minha conta",
@@ -133,5 +139,34 @@
     "history": "Histórico",
     "noCards": "Nenhuma carta ainda. Comece no marketplace.",
     "noTransactions": "Nenhuma transação ainda."
+  },
+  "guest": {
+    "title": "Teste o Boosters antes de entrar",
+    "subtitle": "Abra um pacote demo, veja a revelação e crie uma conta quando estiver pronto.",
+    "account": "Sua conta libera status KYC, pulls salvos, saques e controles de perfil revisados pela administração.",
+    "portfolio": "Seu portfólio guarda pulls reais, saldos, histórico, buybacks e pedidos de saque.",
+    "submit": "Crie uma conta para consignar cartas no cofre. Comece pela demo para ver como aberturas viram propriedade.",
+    "redeem": "Crie uma conta para resgatar cartas físicas. A demo mostra primeiro o fluxo do pacote até a carta."
+  },
+  "demo": {
+    "eyebrow": "Demo para convidados",
+    "title": "Abra um pacote",
+    "titleMuted": "antes de se cadastrar.",
+    "subtitle": "Um sandbox feito para conversão: escolha um pacote com marca, revele uma carta demo e veja como o fluxo real segue para propriedade em cofre, marketplace, buyback e KYC apenas no saque.",
+    "benefitOdds": "Sorteio justo",
+    "benefitVault": "Carta em cofre",
+    "benefitKyc": "Só KYC",
+    "join": "Criar conta",
+    "viewPacks": "Ver pacotes reais",
+    "preview": "Prévia ao vivo",
+    "demoOnly": "Apenas demo",
+    "resultLabel": "Pull demo",
+    "selected": "Pacote escolhido",
+    "opening": "Abrindo...",
+    "openAgain": "Abrir de novo",
+    "open": "Abrir pacote demo",
+    "choosePack": "Escolher pacote",
+    "conversionTitle": "Sinta o pull e entre",
+    "conversionCopy": "A demo usa arte própria da Boosters e saldos fictícios. Aberturas reais exigem login, seeds comprometidos, inventário em cofre e KYC apenas quando o usuário pede saque."
   }
 }

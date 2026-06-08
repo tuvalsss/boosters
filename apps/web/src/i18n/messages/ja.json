@@ -17,7 +17,8 @@
     "all": "すべて",
     "pending": "審査中",
     "approved": "承認済み",
-    "rejected": "却下"
+    "rejected": "却下",
+    "tryDemo": "デモを試す"
   },
   "shell": {
     "sandbox": "devnet サンドボックス。実資金や実決済はありません。",
@@ -45,7 +46,8 @@
     "adminPacks": "パック管理",
     "treasury": "トレジャリー",
     "kyc": "KYC",
-    "reviewQueue": "審査キュー"
+    "reviewQueue": "審査キュー",
+    "demo": "デモ"
   },
   "home": {
     "mode": "devnet sandbox",
@@ -55,7 +57,9 @@
     "openPacks": "パックを開く",
     "browseMarketplace": "マーケットを見る",
     "instantBuyback": "85-90% 即時買取",
-    "footer": "devnet のテストモードのみ。mainnet と実決済には監査が必要です。"
+    "footer": "devnet のテストモードのみ。mainnet と実決済には監査が必要です。",
+    "demoNote": "まず無料で試せます。",
+    "tryDemo": "デモを試す"
   },
   "packs": {
     "title": "パックを開く",
@@ -65,7 +69,9 @@
     "poolOdds": "プールと確率",
     "openFor": "開封価格",
     "soldOut": "売り切れ",
-    "loginToOpen": "ログインして開封"
+    "loginToOpen": "ログインして開封",
+    "emptyCta": "デモパックを開く",
+    "tryDemo": "無料デモを試す"
   },
   "account": {
     "title": "マイアカウント",
@@ -133,5 +139,34 @@
     "history": "履歴",
     "noCards": "カードはまだありません。マーケットから始めましょう。",
     "noTransactions": "取引はまだありません。"
+  },
+  "guest": {
+    "title": "登録前にBoostersを体験",
+    "subtitle": "デモパックを開封し、リビール体験を見てから、準備ができたらアカウントを作成できます。",
+    "account": "アカウントではKYCステータス、保存されたプル、出金、管理者レビュー済みのプロフィール管理が使えます。",
+    "portfolio": "ポートフォリオには実際のプル、残高、履歴、買い戻し、出金リクエストが保存されます。",
+    "submit": "Vaultにカードを預けるにはアカウントを作成してください。まずデモで開封が所有に変わる流れを確認できます。",
+    "redeem": "物理カードを引き換えるにはアカウントを作成してください。デモではパックからカードまでの流れを先に確認できます。"
+  },
+  "demo": {
+    "eyebrow": "ゲストデモ",
+    "title": "パックを開封",
+    "titleMuted": "登録前に。",
+    "subtitle": "コンバージョン向けのサンドボックスです。ブランド付きパックを選び、デモカードをリビールし、実際のフローがVault所有、マーケット取引、買い戻し、出金時のみのKYCにつながる様子を確認できます。",
+    "benefitOdds": "公正な抽選",
+    "benefitVault": "Vaultカード",
+    "benefitKyc": "KYCは出金時",
+    "join": "アカウント作成",
+    "viewPacks": "実パックを見る",
+    "preview": "ライブプレビュー",
+    "demoOnly": "デモのみ",
+    "resultLabel": "デモプル",
+    "selected": "選択中のパック",
+    "opening": "開封中...",
+    "openAgain": "もう一度開く",
+    "open": "デモパックを開く",
+    "choosePack": "パックを選ぶ",
+    "conversionTitle": "開封の高揚感を体験して参加",
+    "conversionCopy": "デモではBoosters所有のアートと架空残高を使います。実際の開封にはログイン、コミット済みseed、Vault在庫が必要で、KYCはユーザーが資金を出金する時だけ必要です。"
   }
 }

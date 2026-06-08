@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { LOCALE_LABELS, LOCALES, useI18n, type Locale } from '@/i18n/language-context';
 import { Logo } from './brand';
 import { SidebarNav } from './sidebar-nav';
-import { ArrowLeftIcon, CloseIcon, HelpIcon, LoginIcon, MenuIcon } from './icons';
+import { ArrowLeftIcon, CloseIcon, HelpIcon, LoginIcon, MenuIcon, SparkleIcon } from './icons';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -112,6 +112,13 @@ function AuthControls() {
 
   return (
     <>
+      <Link
+        href="/demo"
+        className="hidden h-10 items-center gap-2 rounded-xl border border-emerald-300/20 bg-emerald-300/10 px-3.5 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-300/15 md:flex"
+      >
+        <SparkleIcon className="h-4 w-4" />
+        <span>{t('common.tryDemo')}</span>
+      </Link>
       <button
         type="button"
         onClick={login}

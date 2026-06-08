@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import type { RedemptionRow, RedemptionStatus } from '@/lib/types';
+import { GuestConversionPanel } from '@/components/guest-conversion-panel';
 
 const STATUS_STYLE: Record<RedemptionStatus, string> = {
   REQUESTED: 'bg-amber-500/20 text-amber-300',
@@ -12,7 +13,7 @@ const STATUS_STYLE: Record<RedemptionStatus, string> = {
 };
 
 export default function RedeemPage() {
-  const { ready, authenticated, login, apiFetch } = useAuth();
+  const { ready, authenticated, apiFetch } = useAuth();
   const [rows, setRows] = useState<RedemptionRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -32,13 +33,7 @@ export default function RedeemPage() {
   if (!authenticated)
     return (
       <Center>
-        <p className="mb-4 text-white/70">Sign in to view your redemptions.</p>
-        <button
-          onClick={login}
-          className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black"
-        >
-          Login
-        </button>
+        <GuestConversionPanel messageKey="guest.redeem" />
       </Center>
     );
 

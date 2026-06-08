@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { BRANCHES } from '@/lib/branches';
 import type { PackDetail, PackOpening, VerifyOpening } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
+import { ArrowRightIcon } from '@/components/icons';
 
 type Phase = 'idle' | 'opening' | 'done';
 
@@ -102,6 +103,14 @@ export default function PackDetailPage() {
                   ? `${t('packs.openFor')} ${usd(pack.priceUsdc)}`
                   : t('packs.loginToOpen')}
           </button>
+        )}
+        {!authenticated && phase !== 'done' && (
+          <Link
+            href="/demo"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
+          >
+            {t('packs.tryDemo')} <ArrowRightIcon className="h-4 w-4" />
+          </Link>
         )}
         {err && <p className="mt-4 text-sm text-red-300">{err}</p>}
       </div>

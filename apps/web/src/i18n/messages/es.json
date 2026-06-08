@@ -17,7 +17,8 @@
     "all": "Todo",
     "pending": "Pendiente",
     "approved": "Aprobado",
-    "rejected": "Rechazado"
+    "rejected": "Rechazado",
+    "tryDemo": "Probar demo"
   },
   "shell": {
     "sandbox": "Sandbox de devnet. Sin fondos ni pagos reales.",
@@ -45,7 +46,8 @@
     "adminPacks": "Packs (admin)",
     "treasury": "Tesorería",
     "kyc": "KYC",
-    "reviewQueue": "Cola de revisión"
+    "reviewQueue": "Cola de revisión",
+    "demo": "Demo"
   },
   "home": {
     "mode": "devnet sandbox",
@@ -55,7 +57,9 @@
     "openPacks": "Abrir packs",
     "browseMarketplace": "Ver mercado",
     "instantBuyback": "Recompra 85-90%",
-    "footer": "Modo de prueba en devnet. Mainnet y pagos reales requieren auditoría."
+    "footer": "Modo de prueba en devnet. Mainnet y pagos reales requieren auditoría.",
+    "demoNote": "Pruébalo gratis primero.",
+    "tryDemo": "Probar demo"
   },
   "packs": {
     "title": "Abrir packs",
@@ -65,7 +69,9 @@
     "poolOdds": "Pool y probabilidades",
     "openFor": "Abrir por",
     "soldOut": "Agotado",
-    "loginToOpen": "Entra para abrir"
+    "loginToOpen": "Entra para abrir",
+    "emptyCta": "Abrir pack demo",
+    "tryDemo": "Probar demo gratis"
   },
   "account": {
     "title": "Mi cuenta",
@@ -133,5 +139,34 @@
     "history": "Historial",
     "noCards": "Aún no hay cartas. Empieza en el mercado.",
     "noTransactions": "Aún no hay transacciones."
+  },
+  "guest": {
+    "title": "Prueba Boosters antes de unirte",
+    "subtitle": "Abre un pack demo, mira la revelación y crea una cuenta cuando estés listo.",
+    "account": "Tu cuenta desbloquea estado KYC, pulls guardados, retiros y controles de perfil revisados por admin.",
+    "portfolio": "Tu portfolio guarda pulls reales, saldos, historial, recompras y solicitudes de retiro.",
+    "submit": "Crea una cuenta para consignar cartas en la bóveda. Empieza con la demo para ver cómo una apertura se convierte en propiedad.",
+    "redeem": "Crea una cuenta para canjear cartas físicas. La demo muestra primero el flujo de pack a carta."
+  },
+  "demo": {
+    "eyebrow": "Demo invitado",
+    "title": "Abre un pack",
+    "titleMuted": "antes de registrarte.",
+    "subtitle": "Un sandbox pensado para conversión: elige un pack de marca, revela una carta demo y mira cómo el flujo real pasa a propiedad en bóveda, marketplace, recompra y KYC sólo al retirar fondos.",
+    "benefitOdds": "Sorteo justo",
+    "benefitVault": "Carta en bóveda",
+    "benefitKyc": "KYC sólo",
+    "join": "Crear cuenta",
+    "viewPacks": "Ver packs reales",
+    "preview": "Vista en vivo",
+    "demoOnly": "Sólo demo",
+    "resultLabel": "Pull demo",
+    "selected": "Pack elegido",
+    "opening": "Abriendo...",
+    "openAgain": "Abrir de nuevo",
+    "open": "Abrir pack demo",
+    "choosePack": "Elegir pack",
+    "conversionTitle": "Siente el pull y únete",
+    "conversionCopy": "La demo usa arte propio de Boosters y saldos ficticios. Las aperturas reales requieren login, seeds comprometidos, inventario en bóveda y KYC sólo cuando el usuario pide retirar fondos."
   }
 }

@@ -46,8 +46,14 @@ export default function PackPartyPage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href="/packs"
+              href="/demo"
               className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-white/90"
+            >
+              Try Demo
+            </Link>
+            <Link
+              href="/packs"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-5 text-sm font-semibold text-white/85 transition hover:bg-white/[0.07]"
             >
               Choose a Pack
             </Link>

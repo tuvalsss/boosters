@@ -17,7 +17,8 @@
     "all": "全部",
     "pending": "待审核",
     "approved": "已批准",
-    "rejected": "已拒绝"
+    "rejected": "已拒绝",
+    "tryDemo": "试用演示"
   },
   "shell": {
     "sandbox": "Devnet 沙盒。没有真实资金或真实支付。",
@@ -45,7 +46,8 @@
     "adminPacks": "卡包管理",
     "treasury": "资金库",
     "kyc": "KYC",
-    "reviewQueue": "审核队列"
+    "reviewQueue": "审核队列",
+    "demo": "演示"
   },
   "home": {
     "mode": "devnet sandbox",
@@ -55,7 +57,9 @@
     "openPacks": "开启卡包",
     "browseMarketplace": "浏览市场",
     "instantBuyback": "85-90% 即时回购",
-    "footer": "仅 devnet 测试模式。Mainnet 和真实支付需要审计。"
+    "footer": "仅 devnet 测试模式。Mainnet 和真实支付需要审计。",
+    "demoNote": "先免费体验。",
+    "tryDemo": "试用演示"
   },
   "packs": {
     "title": "开启卡包",
@@ -65,7 +69,9 @@
     "poolOdds": "奖池和概率",
     "openFor": "开启价格",
     "soldOut": "已售罄",
-    "loginToOpen": "登录后开启"
+    "loginToOpen": "登录后开启",
+    "emptyCta": "打开演示卡包",
+    "tryDemo": "免费试用演示"
   },
   "account": {
     "title": "我的账户",
@@ -133,5 +139,34 @@
     "history": "历史",
     "noCards": "还没有卡片。可以从市场开始。",
     "noTransactions": "暂无交易。"
+  },
+  "guest": {
+    "title": "加入前先体验 Boosters",
+    "subtitle": "打开一个演示卡包，观看揭晓流程，准备好后再创建账户。",
+    "account": "账户可解锁 KYC 状态、已保存抽卡、提现，以及由管理员审核的资料控制。",
+    "portfolio": "投资组合会保存真实抽卡、余额、历史记录、回购和提现请求。",
+    "submit": "创建账户后可将卡牌寄存进金库。先用演示看看开包如何转为所有权。",
+    "redeem": "创建账户后可兑换实体卡。演示会先展示从卡包到卡牌的流程。"
+  },
+  "demo": {
+    "eyebrow": "访客演示",
+    "title": "打开卡包",
+    "titleMuted": "注册之前。",
+    "subtitle": "面向转化的沙盒体验：选择品牌卡包，揭晓演示卡牌，了解真实流程如何进入金库所有权、市场交易、回购，以及仅在提现时触发的 KYC。",
+    "benefitOdds": "公平抽取",
+    "benefitVault": "金库卡牌",
+    "benefitKyc": "仅 KYC",
+    "join": "创建账户",
+    "viewPacks": "查看真实卡包",
+    "preview": "实时预览",
+    "demoOnly": "仅演示",
+    "resultLabel": "演示抽卡",
+    "selected": "已选卡包",
+    "opening": "正在打开...",
+    "openAgain": "再次打开",
+    "open": "打开演示卡包",
+    "choosePack": "选择卡包",
+    "conversionTitle": "先感受开包，再加入",
+    "conversionCopy": "演示使用 Boosters 自有美术和虚拟余额。真实开包需要登录、已承诺的 seed、金库库存，并且只有用户请求提现时才需要 KYC。"
   }
 }

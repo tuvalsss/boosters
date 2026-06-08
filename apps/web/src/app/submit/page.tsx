@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import type { Submission, SubmissionStatus } from '@/lib/types';
+import { GuestConversionPanel } from '@/components/guest-conversion-panel';
 
 const CATEGORIES = ['POKEMON', 'SPORTS', 'TCG', 'OTHER'];
 const GRADERS = ['PSA', 'BGS', 'CGC', 'SGC', 'RAW', 'OTHER'];
@@ -21,7 +22,7 @@ const STATUS_STYLE: Record<SubmissionStatus, string> = {
 };
 
 export default function SubmitPage() {
-  const { ready, authenticated, login, apiFetch } = useAuth();
+  const { ready, authenticated, apiFetch } = useAuth();
   const [subs, setSubs] = useState<Submission[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -41,13 +42,7 @@ export default function SubmitPage() {
   if (!authenticated) {
     return (
       <Center>
-        <p className="mb-4 text-white/70">Sign in to consign a card.</p>
-        <button
-          onClick={login}
-          className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black"
-        >
-          Login
-        </button>
+        <GuestConversionPanel messageKey="guest.submit" />
       </Center>
     );
   }

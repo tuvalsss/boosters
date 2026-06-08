@@ -7,9 +7,10 @@ import { useAuth } from '@/lib/auth-context';
 import { usd } from '@/lib/api';
 import type { TokenHolding, WalletData } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
+import { GuestConversionPanel } from '@/components/guest-conversion-panel';
 
 export default function PortfolioPage() {
-  const { ready, authenticated, login, apiFetch } = useAuth();
+  const { ready, authenticated, apiFetch } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
   const [data, setData] = useState<WalletData | null>(null);
@@ -32,13 +33,7 @@ export default function PortfolioPage() {
   if (!authenticated) {
     return (
       <Center>
-        <p className="mb-4 text-white/70">Sign in to view your portfolio.</p>
-        <button
-          onClick={login}
-          className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black"
-        >
-          {t('common.login')}
-        </button>
+        <GuestConversionPanel messageKey="guest.portfolio" />
       </Center>
     );
   }

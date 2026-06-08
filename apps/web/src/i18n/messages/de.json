@@ -17,7 +17,8 @@
     "all": "Alle",
     "pending": "Ausstehend",
     "approved": "Genehmigt",
-    "rejected": "Abgelehnt"
+    "rejected": "Abgelehnt",
+    "tryDemo": "Demo testen"
   },
   "shell": {
     "sandbox": "Devnet-Sandbox. Keine echten Gelder oder Zahlungen.",
@@ -45,7 +46,8 @@
     "adminPacks": "Packs (Admin)",
     "treasury": "Treasury",
     "kyc": "KYC",
-    "reviewQueue": "Prüfqueue"
+    "reviewQueue": "Prüfqueue",
+    "demo": "Demo"
   },
   "home": {
     "mode": "devnet sandbox",
@@ -55,7 +57,9 @@
     "openPacks": "Packs öffnen",
     "browseMarketplace": "Marktplatz ansehen",
     "instantBuyback": "85-90% Sofortrückkauf",
-    "footer": "Nur Testmodus auf devnet. Mainnet und echte Zahlungen benötigen ein Audit."
+    "footer": "Nur Testmodus auf devnet. Mainnet und echte Zahlungen benötigen ein Audit.",
+    "demoNote": "Erst kostenlos testen.",
+    "tryDemo": "Demo testen"
   },
   "packs": {
     "title": "Packs öffnen",
@@ -65,7 +69,9 @@
     "poolOdds": "Pool und Chancen",
     "openFor": "Öffnen für",
     "soldOut": "Ausverkauft",
-    "loginToOpen": "Zum Öffnen einloggen"
+    "loginToOpen": "Zum Öffnen einloggen",
+    "emptyCta": "Demo-Pack öffnen",
+    "tryDemo": "Kostenlose Demo testen"
   },
   "account": {
     "title": "Mein Konto",
@@ -133,5 +139,34 @@
     "history": "Verlauf",
     "noCards": "Noch keine Karten. Starte im Marktplatz.",
     "noTransactions": "Noch keine Transaktionen."
+  },
+  "guest": {
+    "title": "Teste Boosters, bevor du beitrittst",
+    "subtitle": "Öffne ein Demo-Pack, erlebe die Reveal-Phase und erstelle ein Konto, wenn du bereit bist.",
+    "account": "Dein Konto schaltet KYC-Status, gespeicherte Pulls, Auszahlungen und geprüfte Profilkontrollen frei.",
+    "portfolio": "Dein Portfolio speichert echte Pulls, Guthaben, Verlauf, Buybacks und Auszahlungsanfragen.",
+    "submit": "Erstelle ein Konto, um Karten in den Vault einzuliefern. Starte mit der Demo und sieh, wie Openings zu Eigentum werden.",
+    "redeem": "Erstelle ein Konto, um physische Karten einzulösen. Die Demo zeigt zuerst den Weg vom Pack zur Karte."
+  },
+  "demo": {
+    "eyebrow": "Gast-Demo",
+    "title": "Öffne ein Pack",
+    "titleMuted": "vor der Registrierung.",
+    "subtitle": "Eine Conversion-sichere Sandbox: Wähle ein gebrandetes Pack, enthülle eine Demo-Karte und sieh, wie der echte Flow in Vault-Eigentum, Marketplace-Handel, Buyback und KYC nur bei Auszahlungen übergeht.",
+    "benefitOdds": "Fairer Draw",
+    "benefitVault": "Vault-Karte",
+    "benefitKyc": "Nur KYC",
+    "join": "Konto erstellen",
+    "viewPacks": "Echte Packs ansehen",
+    "preview": "Live-Vorschau",
+    "demoOnly": "Nur Demo",
+    "resultLabel": "Demo-Pull",
+    "selected": "Gewähltes Pack",
+    "opening": "Öffnet...",
+    "openAgain": "Nochmal öffnen",
+    "open": "Demo-Pack öffnen",
+    "choosePack": "Pack wählen",
+    "conversionTitle": "Den Pull fühlen, dann beitreten",
+    "conversionCopy": "Die Demo nutzt Boosters-eigene Kunst und fiktive Guthaben. Echte Openings benötigen Login, committed seeds, Vault-Inventar und KYC nur, wenn ein Nutzer Geld abheben möchte."
   }
 }
