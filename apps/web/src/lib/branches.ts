@@ -1,7 +1,6 @@
 // Branch catalog — the "ענפים" (categories) shown across the app. Each branch
-// maps to a folder of swappable PNG assets under /public/assets (see its
-// README). Real prices/odds/inventory come from the API in later phases; these
-// values are devnet placeholders for the visual shell.
+// maps to swappable PNG assets under /public/assets. Live inventory comes from
+// the API; these values are visual fallbacks for empty/devnet states.
 
 export type BranchKey = 'pokemon' | 'onepiece' | 'yugioh' | 'nfl' | 'nba' | 'tcg';
 

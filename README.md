@@ -21,8 +21,9 @@ is enforced across layers:
 - **Database:** a partial unique index allows at most one `ACTIVE` listing per
   vault item; a deferred constraint trigger enforces that every order's
   double-entry ledger nets to zero; ledger amounts must be positive.
-- **App / smart-contract:** added in later phases (minting is triggered only by
-  an internal "vault intake confirmed + graded" event).
+- **App / smart-contract:** API state transitions trigger minting only from an
+  internal "vault intake confirmed + graded" event; no user-submitted photo or
+  claim can create a tradeable token.
 
 See `packages/db/prisma/schema.prisma` and the `*_custody_gate_guards` migration.
 
@@ -194,8 +195,8 @@ sandbox/[ref]`); in **live** mode a **Coinflow webhook** (HMAC-verified with
 ```
 apps/
   web/      Next.js PWA (marketplace, packs, portfolio, admin)
-  api/      NestJS API (Fastify) — config + health wired; feature modules per phase
-  worker/   BullMQ background workers — queue registry declared; processors per phase
+  api/      NestJS API (Fastify) — auth, vault, marketplace, packs, raffles, payments
+  worker/   BullMQ background workers — maintenance processors for quotes, on-ramps, treasury
 packages/
   db/       Prisma schema (domain model), client, migrations, seed
   config/   zod-validated env + devnet/mainnet safe-mode guardrails
@@ -238,13 +239,13 @@ Postgres + Redis services.
 The web app ships a responsive shell modeled on the product references:
 
 - **Home** (`/`) — "Rip packs. Pull graded cards." hero + an **Open Packs** grid.
-- **Packs** (`/packs`) — a **visual pack shuffler**: a fanned 3-pack carousel with
-  an accent glow, a `Shuffle` action that spins and settles on a pack, and
-  tap-to-select. (Real provably-fair opening lands in Phase 6.)
+- **Packs** (`/packs`) — live pack inventory from the API, pack detail pages,
+  transparent pool odds, commit/reveal opening, and public proof links.
 - **Navigation** — a high-density **desktop sidebar rail** and a slide-in
   **mobile drawer** sharing one nav definition (Home, Packs, Pack Party,
   Marketplace, Leaderboard; Community; branch shortcuts).
-- **Branch pages** (`/branch/[key]`) per category.
+- **Branch pages** (`/branch/[key]`) per category, plus Activity, Pack Party,
+  Leaderboard, and Refer screens so the primary navigation has real surfaces.
 
 ### Swappable image assets
 
@@ -273,7 +274,8 @@ wallet/config preconditions).
 **Gated until audit (not stubbed away — flag-protected):** mainnet and real
 payments. **Per later phases:** on-chain USDC settlement, VRF, real
 pack/raffle/buyback logic, token burn/redeem, real KYC providers. The worker
-declares queues but registers no processors yet.
+queue registry and maintenance processors are wired in the app and covered by
+integration tests.
 
 **Phase 4 — Marketplace: complete.** Double-entry ledger, custodial USDC
 balances, first-party & P2P listings (gate-enforced), USDC buy with 2% fee split

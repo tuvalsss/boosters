@@ -21,6 +21,7 @@
     "db:migrate:dev": "pnpm --filter @boosters/db migrate:dev",
     "db:reset": "pnpm --filter @boosters/db reset",
     "db:seed": "pnpm --filter @boosters/db seed",
+    "assets:icons": "node scripts/generate-pwa-icons.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"
   },
