@@ -112,16 +112,18 @@ export default function PackDetailPage() {
                 alt={`${pack.name} opened pack`}
                 className="pack-opened-image h-full"
               />
-              <Image
-                src={previewPrizeImage}
-                alt=""
-                width={500}
-                height={700}
-                className={[
-                  'pack-emerging-card h-52 w-auto rounded-xl shadow-2xl ring-1 ring-white/20',
-                  phase === 'done' ? 'is-revealed' : '',
-                ].join(' ')}
-              />
+              <div className={`pack-emerging-card ${phase === 'done' ? 'is-revealed' : ''}`}>
+                <span className="hit-card-aura" style={{ backgroundColor: pack.accentColor }} />
+                <Image
+                  src={previewPrizeImage}
+                  alt=""
+                  width={500}
+                  height={700}
+                  className="hit-card-image h-52 w-auto rounded-xl"
+                />
+                <span className="hit-card-shine" />
+                <span className="hit-card-scan" />
+              </div>
             </div>
           )}
         </div>

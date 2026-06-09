@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { isStaff, type VaultItemRow, type VaultState } from '@/lib/types';
+import { isStaff, type EbayCardListing, type VaultItemRow, type VaultState } from '@/lib/types';
 
 const LEGACY_CATEGORIES = ['POKEMON', 'SPORTS', 'TCG', 'OTHER'] as const;
 const GRADERS = ['PSA', 'BGS', 'CGC', 'SGC', 'RAW', 'OTHER'] as const;
@@ -35,6 +35,7 @@ export default function VaultAdminPage() {
   const { ready, authenticated, dbUser, apiFetch } = useAuth();
   const [items, setItems] = useState<VaultItemRow[]>([]);
   const [categories, setCategories] = useState<ManagedCategory[]>([]);
+  const [ebayListings, setEbayListings] = useState<EbayCardListing[]>([]);
   const [filter, setFilter] = useState<VaultState | ''>('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -45,12 +46,14 @@ export default function VaultAdminPage() {
     setErr(null);
     try {
       const q = filter ? `?state=${filter}` : '';
-      const [vault, cats] = await Promise.all([
+      const [vault, cats, ebay] = await Promise.all([
         apiFetch<{ items: VaultItemRow[]; total: number }>(`/admin/vault/items${q}`),
         apiFetch<ManagedCategory[]>('/admin/vault/card-categories'),
+        apiFetch<EbayCardListing[]>('/admin/vault/ebay-listings?take=12'),
       ]);
       setItems(vault.items);
       setCategories(cats);
+      setEbayListings(ebay);
     } catch (e) {
       setErr((e as Error).message);
     }
@@ -104,6 +107,12 @@ export default function VaultAdminPage() {
         busy={busy === 'intake'}
       />
 
+      <EbaySourcingPanel
+        listings={ebayListings}
+        busy={busy}
+        onCreateIntake={(id) => mutate('POST', `ebay-listings/${id}/intake`)}
+      />
+
       <div className="mt-8 flex flex-wrap items-center gap-2">
         <span className="text-sm text-white/50">Filter:</span>
         {(['', 'INTAKE', 'AUTHENTICATING', 'GRADED', 'VAULTED'] as const).map((s) => (
@@ -128,6 +137,92 @@ export default function VaultAdminPage() {
         {items.length === 0 && <p className="py-8 text-center text-white/40">No items.</p>}
       </div>
     </div>
+  );
+}
+
+function EbaySourcingPanel({
+  listings,
+  busy,
+  onCreateIntake,
+}: {
+  listings: EbayCardListing[];
+  busy: string | null;
+  onCreateIntake: (id: string) => void;
+}) {
+  return (
+    <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+        <div>
+          <h2 className="text-lg font-semibold">eBay sourcing</h2>
+          <p className="text-sm text-white/50">
+            Official Browse API listings. Import candidates, then create intake before any card can
+            enter packs.
+          </p>
+        </div>
+        <code className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white/60">
+          pnpm ebay:import-cards -- --limit 100
+        </code>
+      </div>
+
+      {listings.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-dashed border-white/15 px-4 py-6 text-center text-sm text-white/45">
+          No eBay listings imported yet. Add the eBay env vars and run the import command.
+        </p>
+      ) : (
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {listings.map((listing) => (
+            <article
+              key={listing.id}
+              className="grid grid-cols-[5.2rem_1fr] gap-3 rounded-xl border border-white/10 bg-black/25 p-3"
+            >
+              <a
+                href={listing.itemAffiliateWebUrl ?? listing.itemWebUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="relative h-28 overflow-hidden rounded-lg bg-white/5"
+              >
+                <Image
+                  src={listing.imageUrl}
+                  alt={listing.cardName}
+                  fill
+                  className="object-cover"
+                  sizes="84px"
+                />
+              </a>
+              <div className="min-w-0">
+                <div className="flex flex-wrap gap-1">
+                  <span className="rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200">
+                    {listing.tier}
+                  </span>
+                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/55">
+                    {listing.status}
+                  </span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm font-semibold">{listing.cardName}</p>
+                <p className="mt-1 truncate text-xs text-white/45">
+                  {listing.grader} {listing.grade ?? ''} / {listing.condition ?? listing.category}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-emerald-200">
+                  {listing.priceCurrency} {Number(listing.priceValue).toLocaleString()}
+                </p>
+                <p className="mt-1 truncate text-[11px] text-white/35">
+                  {listing.sellerUsername ?? 'seller'}{' '}
+                  {listing.sellerFeedbackPercentage ? `/ ${listing.sellerFeedbackPercentage}%` : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onCreateIntake(listing.id)}
+                  disabled={busy === `ebay-listings/${listing.id}/intake`}
+                  className="mt-3 h-8 rounded-lg bg-white px-3 text-xs font-semibold text-black transition hover:bg-white/90 disabled:opacity-50"
+                >
+                  Create intake
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

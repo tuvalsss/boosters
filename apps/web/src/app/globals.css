@@ -150,6 +150,10 @@ body {
   left: 50%;
   top: 0.8rem;
   z-index: 22;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
   transform-origin: center bottom;
   animation: card-emerge 1.38s cubic-bezier(0.16, 0.94, 0.24, 1.04) 0.28s both;
   will-change: transform, opacity;
@@ -159,6 +163,56 @@ body {
   animation: none;
   opacity: 1;
   transform: translate(-50%, -2.1rem) rotateX(0deg) rotateZ(0deg) scale(1);
+}
+
+.hit-card-image {
+  position: relative;
+  z-index: 3;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    0 1.5rem 3rem rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.hit-card-aura {
+  position: absolute;
+  inset: 7% 4%;
+  z-index: 0;
+  border-radius: 1.25rem;
+  opacity: 0.55;
+  filter: blur(1.6rem);
+  transform: scale(1.14);
+}
+
+.hit-card-shine {
+  position: absolute;
+  inset: -4% 8%;
+  z-index: 4;
+  border-radius: 1rem;
+  pointer-events: none;
+  background: linear-gradient(
+    112deg,
+    transparent 0 28%,
+    rgba(255, 255, 255, 0.62) 42%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 66% 100%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: hit-card-shine 1.15s cubic-bezier(0.16, 0.88, 0.24, 1) 1.05s both;
+}
+
+.hit-card-scan {
+  position: absolute;
+  inset: 0.2rem;
+  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 0.9rem;
+  pointer-events: none;
+  opacity: 0.34;
+  transform: translateY(0);
+  animation: hit-card-scan 2.2s ease-in-out 1.15s infinite;
 }
 
 .pack-mini-selected {
@@ -199,15 +253,47 @@ body {
 @keyframes card-emerge {
   0% {
     opacity: 0;
-    transform: translate(-50%, 8rem) rotateX(-68deg) rotateZ(-4deg) scale(0.62);
+    transform: translate(-50%, 8.4rem) rotateX(-70deg) rotateY(-12deg) rotateZ(-5deg) scale(0.58);
+    filter: blur(0.35rem) saturate(1.3);
   }
-  52% {
+  46% {
     opacity: 1;
-    transform: translate(-50%, 1.45rem) rotateX(-14deg) rotateZ(2deg) scale(0.9);
+    transform: translate(-50%, 1.1rem) rotateX(-17deg) rotateY(8deg) rotateZ(2deg) scale(0.92);
+    filter: blur(0) saturate(1.2);
+  }
+  72% {
+    transform: translate(-50%, -2.55rem) rotateX(4deg) rotateY(-4deg) rotateZ(-1deg) scale(1.04);
   }
   100% {
     opacity: 1;
     transform: translate(-50%, -2.1rem) rotateX(0deg) rotateZ(0deg) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
+@keyframes hit-card-shine {
+  0% {
+    opacity: 0;
+    transform: translateX(-62%) skewX(-12deg);
+  }
+  34% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(72%) skewX(-12deg);
+  }
+}
+
+@keyframes hit-card-scan {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translateY(-0.1rem);
+  }
+  50% {
+    opacity: 0.42;
+    transform: translateY(0.1rem);
   }
 }
 
@@ -440,6 +526,8 @@ body {
   .pack-open-stage.is-opening::before,
   .pack-open-stage.is-opening .pack-opened-image,
   .pack-emerging-card,
+  .hit-card-shine,
+  .hit-card-scan,
   .pack-rip-left.is-opening,
   .pack-rip-right.is-opening,
   .tear-flash.is-opening,

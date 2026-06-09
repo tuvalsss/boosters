@@ -72,6 +72,30 @@ export interface CardSummary {
   photos: { url: string; kind: string }[];
 }
 
+export interface EbayCardListing {
+  id: string;
+  ebayItemId: string;
+  title: string;
+  cardName: string;
+  category: string;
+  setName: string | null;
+  grader: string;
+  grade: string | null;
+  year: number | null;
+  tier: string;
+  condition: string | null;
+  imageUrl: string;
+  itemWebUrl: string;
+  itemAffiliateWebUrl: string | null;
+  priceValue: string;
+  priceCurrency: string;
+  sellerUsername: string | null;
+  sellerFeedbackPercentage: string | null;
+  sourceQuery: string | null;
+  status: 'ACTIVE' | 'STALE' | 'IMPORTED' | 'RETIRED';
+  lastSeenAt: string;
+}
+
 export interface ListingRow {
   id: string;
   priceUsdc: string;

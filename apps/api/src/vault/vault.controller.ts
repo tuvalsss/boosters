@@ -33,6 +33,20 @@ export class VaultController {
     return this.vault.listCategories(true);
   }
 
+  @Get('ebay-listings')
+  ebayListings(@Query('status') status?: string, @Query('take') take?: string) {
+    const parsed =
+      status && ['ACTIVE', 'STALE', 'IMPORTED', 'RETIRED'].includes(status)
+        ? (status as 'ACTIVE' | 'STALE' | 'IMPORTED' | 'RETIRED')
+        : undefined;
+    return this.vault.listEbayListings(Number(take) || 50, parsed);
+  }
+
+  @Post('ebay-listings/:id/intake')
+  createIntakeFromEbayListing(@CurrentUser() actor: User, @Param('id') id: string) {
+    return this.vault.createIntakeFromEbayListing(actor, id);
+  }
+
   @Post('card-categories')
   createCategory(@CurrentUser() actor: User, @Body() dto: ManagedCategoryDto) {
     return this.vault.createCategory(actor, dto);

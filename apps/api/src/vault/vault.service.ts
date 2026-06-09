@@ -93,6 +93,73 @@ export class VaultService {
     });
   }
 
+  async listEbayListings(take = 50, status?: 'ACTIVE' | 'STALE' | 'IMPORTED' | 'RETIRED') {
+    return this.prisma.ebayCardListing.findMany({
+      where: status ? { status } : {},
+      orderBy: [{ status: 'asc' }, { priceValue: 'desc' }],
+      take: Math.min(Math.max(take, 1), 100),
+    });
+  }
+
+  async createIntakeFromEbayListing(actor: User, listingId: string): Promise<VaultItem> {
+    const listing = await this.prisma.ebayCardListing.findUnique({ where: { id: listingId } });
+    if (!listing) throw new NotFoundException('eBay listing not found');
+    if (listing.status === 'RETIRED') throw new BadRequestException('eBay listing is retired');
+
+    const item = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.vaultItem.create({
+        data: {
+          state: 'INTAKE',
+          owner: { connect: { id: actor.id } },
+          physicalCard: {
+            create: {
+              category: listing.category,
+              grader: listing.grader,
+              cardName: listing.cardName,
+              setName: listing.setName,
+              year: listing.year,
+              grade: listing.grade,
+              attributes: {
+                source: {
+                  type: 'EBAY',
+                  listingId: listing.id,
+                  ebayItemId: listing.ebayItemId,
+                  itemWebUrl: listing.itemWebUrl,
+                  itemAffiliateWebUrl: listing.itemAffiliateWebUrl,
+                  priceValue: listing.priceValue.toString(),
+                  priceCurrency: listing.priceCurrency,
+                  sellerUsername: listing.sellerUsername,
+                  status: 'purchase_required',
+                },
+              } as Prisma.InputJsonValue,
+              photos: {
+                create: [{ url: listing.imageUrl, kind: 'source' }],
+              },
+            },
+          },
+        },
+      });
+      await tx.ebayCardListing.update({
+        where: { id: listing.id },
+        data: { status: 'IMPORTED' },
+      });
+      return created;
+    });
+
+    await this.audit.log({
+      actorId: actor.id,
+      entityType: 'EbayCardListing',
+      entityId: listing.id,
+      action: 'EBAY_LISTING_INTAKE_CREATED',
+      metadata: {
+        vaultItemId: item.id,
+        ebayItemId: listing.ebayItemId,
+        itemWebUrl: listing.itemWebUrl,
+      },
+    });
+    return item;
+  }
+
   async createCategory(actor: User, dto: ManagedCategoryDto) {
     const slug = normaliseSlug(dto.slug || dto.name);
     const category = await this.prisma.managedCardCategory.create({

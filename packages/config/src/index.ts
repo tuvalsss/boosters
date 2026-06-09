@@ -100,6 +100,14 @@ export const envSchema = z.object({
   SELLER_KYC_VOLUME_USDC: intFromEnv.default(1000),
   RATE_LIMIT_LISTINGS_PER_DAY: intFromEnv.default(25),
   RATE_LIMIT_SUBMISSIONS_PER_DAY: intFromEnv.default(10),
+
+  // eBay sourcing catalog. Uses the official Buy Browse API; credentials stay
+  // server-side and are only needed for import/refresh jobs.
+  EBAY_ENV: z.enum(['production', 'sandbox']).default('production'),
+  EBAY_CLIENT_ID: z.string().optional(),
+  EBAY_CLIENT_SECRET: z.string().optional(),
+  EBAY_MARKETPLACE_ID: z.string().default('EBAY_US'),
+  EBAY_BROWSE_SCOPE: z.string().default('https://api.ebay.com/oauth/api_scope'),
 });
 
 export type Env = z.infer<typeof envSchema>;

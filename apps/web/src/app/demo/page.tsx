@@ -343,16 +343,18 @@ function PackRevealStage({
             className="pack-opened-image h-full"
             imageClassName="drop-shadow-2xl"
           />
-          <Image
-            src={result.image}
-            alt=""
-            width={500}
-            height={700}
-            className={[
-              'pack-emerging-card h-52 w-auto rounded-xl shadow-2xl ring-1 ring-white/20 sm:h-60',
-              phase === 'revealed' ? 'is-revealed' : '',
-            ].join(' ')}
-          />
+          <div className={`pack-emerging-card ${phase === 'revealed' ? 'is-revealed' : ''}`}>
+            <span className="hit-card-aura" style={{ backgroundColor: result.accent }} />
+            <Image
+              src={result.image}
+              alt=""
+              width={500}
+              height={700}
+              className="hit-card-image h-52 w-auto rounded-xl sm:h-60"
+            />
+            <span className="hit-card-shine" />
+            <span className="hit-card-scan" />
+          </div>
         </div>
       )}
     </div>
