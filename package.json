@@ -22,6 +22,7 @@
     "db:reset": "pnpm --filter @boosters/db reset",
     "db:seed": "pnpm --filter @boosters/db seed",
     "ebay:import-cards": "node scripts/import-ebay-card-listings.mjs",
+    "ebay:seed-samples": "node scripts/seed-sample-card-listings.mjs",
     "assets:icons": "node scripts/generate-pwa-icons.mjs",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"

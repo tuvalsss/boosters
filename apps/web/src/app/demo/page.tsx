@@ -21,11 +21,86 @@ interface DemoPrize {
   image: string;
   accent: string;
   sourceUrl: string;
+  sourceLabel: string;
   seller: string | null;
   grade: string | null;
 }
 
 const REEL_ITEM_WIDTH_REM = 9.75;
+const SAMPLE_PRIZES: DemoPrize[] = [
+  {
+    id: 'sample-charizard-ex-349-psa10',
+    name: 'Charizard ex 349/190',
+    rarity: 'GRAIL',
+    value: 600,
+    image: '/assets/sample-prizes/charizard-ex-psa10.svg',
+    accent: '#ef4444',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=Charizard+ex+349%2F190+PSA+10',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'PSA 10',
+  },
+  {
+    id: 'sample-pikachu-vmax-psa10',
+    name: 'Pikachu VMAX 279/184',
+    rarity: 'CHASE',
+    value: 320,
+    image: '/assets/sample-prizes/pikachu-vmax-psa10.svg',
+    accent: '#facc15',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=Pikachu+VMAX+279%2F184+PSA+10',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'PSA 10',
+  },
+  {
+    id: 'sample-umbreon-vmax-psa10',
+    name: 'Umbreon VMAX 245/184',
+    rarity: 'GRAIL',
+    value: 950,
+    image: '/assets/sample-prizes/umbreon-vmax-psa10.svg',
+    accent: '#818cf8',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=Umbreon+VMAX+245%2F184+PSA+10',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'PSA 10',
+  },
+  {
+    id: 'sample-mewtwo-gx-psa10',
+    name: 'Mewtwo GX 082/072',
+    rarity: 'RARE',
+    value: 410,
+    image: '/assets/sample-prizes/mewtwo-gx-psa10.svg',
+    accent: '#c084fc',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=Mewtwo+GX+082%2F072+PSA+10',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'PSA 10',
+  },
+  {
+    id: 'sample-rookie-prizm-psa10',
+    name: 'Rookie Silver Prizm',
+    rarity: 'GRAIL',
+    value: 1200,
+    image: '/assets/sample-prizes/rookie-prizm-psa10.svg',
+    accent: '#38bdf8',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=rookie+silver+prizm+PSA+10',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'PSA 10',
+  },
+  {
+    id: 'sample-arcana-dragon-bgs95',
+    name: 'Arcana Dragon Foil',
+    rarity: 'UNCOMMON',
+    value: 250,
+    image: '/assets/sample-prizes/arcana-dragon-bgs95.svg',
+    accent: '#fb923c',
+    sourceUrl: 'https://www.ebay.com/sch/i.html?_nkw=fantasy+tcg+foil+graded+card',
+    sourceLabel: 'Sample seed',
+    seller: 'manual sample',
+    grade: 'BGS 9.5',
+  },
+];
 
 export default function DemoPage() {
   const { t } = useI18n();
@@ -36,6 +111,7 @@ export default function DemoPage() {
   const [targetSlot, setTargetSlot] = useState(0);
   const [openCount, setOpenCount] = useState(0);
   const [livePrizes, setLivePrizes] = useState<DemoPrize[]>([]);
+  const [prizeSource, setPrizeSource] = useState<'ebay' | 'sample'>('sample');
   const [loadingPrizes, setLoadingPrizes] = useState(true);
   const [prizeError, setPrizeError] = useState<string | null>(null);
   const timer = useRef<number | null>(null);
@@ -49,6 +125,7 @@ export default function DemoPage() {
   const resultAccent = result?.accent ?? selected.accent;
   const rouletteItems = useMemo(() => buildRouletteItems(livePrizes), [livePrizes]);
   const canOpen = livePrizes.length > 0 && !loadingPrizes;
+  const sampleMode = prizeSource === 'sample';
 
   useEffect(() => {
     let mounted = true;
@@ -56,7 +133,9 @@ export default function DemoPage() {
     publicFetch<EbayCardListing[]>('/catalog/ebay-prizes?take=32')
       .then((rows) => {
         if (!mounted) return;
-        setLivePrizes(rows.map(prizeFromListing));
+        const imported = rows.map(prizeFromListing);
+        setLivePrizes(imported.length ? imported : SAMPLE_PRIZES);
+        setPrizeSource(imported.length ? 'ebay' : 'sample');
         setPrizeError(null);
         setResultIndex(0);
         setTargetSlot(0);
@@ -64,7 +143,8 @@ export default function DemoPage() {
       })
       .catch((error) => {
         if (!mounted) return;
-        setLivePrizes([]);
+        setLivePrizes(SAMPLE_PRIZES);
+        setPrizeSource('sample');
         setPrizeError((error as Error).message);
       })
       .finally(() => {
@@ -89,7 +169,7 @@ export default function DemoPage() {
 
     const prizeCount = livePrizes.length;
     const nextResultIndex = (selectedIndex * 3 + openCount) % prizeCount;
-    const nextSlot = 10 + (2 + (openCount % 4)) * prizeCount + nextResultIndex;
+    const nextSlot = 20 + (5 + (openCount % 4)) * prizeCount + nextResultIndex;
     setResultIndex(nextResultIndex);
     setTargetSlot(nextSlot);
     setPhase('opening');
@@ -97,7 +177,7 @@ export default function DemoPage() {
     timer.current = window.setTimeout(() => {
       setPhase('revealed');
       setOpenCount((count) => count + 1);
-    }, 2500);
+    }, 5200);
   };
 
   return (
@@ -118,7 +198,11 @@ export default function DemoPage() {
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <DemoStat icon={<BoltIcon />} label={t('demo.benefitOdds')} value="provably fair" />
-            <DemoStat icon={<LayersIcon />} label={t('demo.benefitVault')} value="eBay sourced" />
+            <DemoStat
+              icon={<LayersIcon />}
+              label={t('demo.benefitVault')}
+              value={sampleMode ? 'sample seed' : 'eBay sourced'}
+            />
             <DemoStat icon={<TrophyIcon />} label={t('demo.benefitKyc')} value="withdrawals" />
           </div>
 
@@ -158,7 +242,7 @@ export default function DemoPage() {
               {loadingPrizes
                 ? t('demo.loadingListings')
                 : livePrizes.length
-                  ? `${livePrizes.length} ${t('demo.ebayPrizes')}`
+                  ? `${livePrizes.length} ${sampleMode ? t('demo.samplePrizes') : t('demo.ebayPrizes')}`
                   : t('demo.importRequired')}
             </span>
           </div>
@@ -238,6 +322,11 @@ export default function DemoPage() {
           </div>
           <p className="max-w-xl text-sm leading-6 text-white/55">{t('demo.conversionCopy')}</p>
         </div>
+        {sampleMode && (
+          <p className="mt-3 max-w-3xl rounded-xl border border-amber-300/15 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-amber-100/80">
+            {prizeError ? t('demo.sampleBecauseApi') : t('demo.sampleUntilEbay')}
+          </p>
+        )}
         {livePrizes.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-8 text-center">
             <p className="text-sm font-bold text-white">{t('demo.importTitle')}</p>
@@ -267,7 +356,7 @@ export default function DemoPage() {
                     {prize.rarity} / {formatMoney(prize.value)}
                   </span>
                   <span className="mt-1 block truncate text-[11px] text-white/35">
-                    {t('demo.sourceLabel')}: eBay
+                    {t('demo.sourceLabel')}: {prize.sourceLabel}
                   </span>
                 </span>
               </a>
@@ -473,7 +562,7 @@ function WinnerReveal({ result }: { result: DemoPrize }) {
           rel="noreferrer"
           className="rounded-full border border-white/10 px-2.5 py-1 text-white/70 hover:text-white"
         >
-          {t('demo.viewListing')}
+          {result.sourceLabel === 'eBay' ? t('demo.viewListing') : t('demo.searchListing')}
         </a>
       </div>
     </div>
@@ -508,7 +597,7 @@ function DemoStat({ icon, label, value }: { icon: ReactNode; label: string; valu
 
 function buildRouletteItems(prizes: DemoPrize[]): DemoPrize[] {
   if (!prizes.length) return [];
-  const repeats = Math.max(6, Math.ceil(150 / prizes.length));
+  const repeats = Math.max(12, Math.ceil(260 / prizes.length));
   return Array.from({ length: repeats }, () => prizes).flat();
 }
 
@@ -522,6 +611,7 @@ function prizeFromListing(listing: EbayCardListing): DemoPrize {
     image: listing.imageUrl,
     accent: accentForListing(listing),
     sourceUrl: listing.itemAffiliateWebUrl ?? listing.itemWebUrl,
+    sourceLabel: 'eBay',
     seller: listing.sellerUsername,
     grade: listing.grade,
   };

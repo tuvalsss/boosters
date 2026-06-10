@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1000" viewBox="0 0 720 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Charizard ex PSA 10 sample slab</title>
+  <desc id="desc">Sample front image for Charizard ex 349/190 Shiny Treasure ex PSA 10.</desc>
+  <defs>
+    <linearGradient id="slab" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset=".36" stop-color="#9ca3af"/><stop offset=".7" stop-color="#f8fafc"/><stop offset="1" stop-color="#64748b"/></linearGradient>
+    <linearGradient id="card" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#3b0711"/><stop offset=".45" stop-color="#dc2626"/><stop offset="1" stop-color="#111827"/></linearGradient>
+    <radialGradient id="burst" cx=".52" cy=".34" r=".68"><stop offset="0" stop-color="#fff7ed"/><stop offset=".26" stop-color="#fb7185"/><stop offset=".64" stop-color="#7f1d1d"/><stop offset="1" stop-color="#0f172a"/></radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#020617" flood-opacity=".45"/></filter>
+  </defs>
+  <rect width="720" height="1000" rx="36" fill="#111827"/>
+  <rect x="24" y="18" width="672" height="964" rx="32" fill="url(#slab)" opacity=".72"/>
+  <rect x="42" y="36" width="636" height="928" rx="25" fill="#d1d5db" opacity=".42"/>
+  <rect x="58" y="54" width="604" height="892" rx="20" fill="#111827" opacity=".72"/>
+  <rect x="76" y="72" width="568" height="150" rx="8" fill="#f8fafc"/>
+  <rect x="76" y="72" width="568" height="22" fill="#ef4444"/>
+  <rect x="76" y="200" width="568" height="22" fill="#ef4444"/>
+  <text x="103" y="118" font-family="Arial Black, Arial, sans-serif" font-size="29" fill="#334155">2023 POKEMON SV4a JP</text>
+  <text x="103" y="152" font-family="Arial Black, Arial, sans-serif" font-size="29" fill="#111827">CHARIZARD ex</text>
+  <text x="103" y="185" font-family="Arial Black, Arial, sans-serif" font-size="25" fill="#334155">SPECIAL ART RARE</text>
+  <text x="503" y="118" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="24" fill="#334155">#349</text>
+  <text x="560" y="155" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="26" fill="#111827">GEM MT</text>
+  <text x="560" y="190" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="36" fill="#111827">10</text>
+  <rect x="104" y="190" width="188" height="18" fill="#111827"/>
+  <g fill="#fff"><rect x="111" y="190" width="5" height="18"/><rect x="124" y="190" width="3" height="18"/><rect x="137" y="190" width="6" height="18"/><rect x="153" y="190" width="3" height="18"/><rect x="165" y="190" width="8" height="18"/><rect x="181" y="190" width="4" height="18"/><rect x="196" y="190" width="6" height="18"/><rect x="214" y="190" width="3" height="18"/><rect x="229" y="190" width="8" height="18"/><rect x="248" y="190" width="4" height="18"/><rect x="264" y="190" width="6" height="18"/></g>
+  <text x="356" y="205" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="42" fill="#1d4ed8">PSA</text>
+  <rect x="108" y="252" width="504" height="636" rx="28" fill="#0f172a" filter="url(#shadow)"/>
+  <rect x="126" y="270" width="468" height="600" rx="24" fill="url(#card)"/>
+  <rect x="148" y="292" width="424" height="556" rx="18" fill="url(#burst)" opacity=".95"/>
+  <path d="M360 322c80 44 118 118 82 193 62 24 93 78 81 143-78-33-151-49-233-29 28-41 43-86 27-134-35 54-79 88-139 103 18-83 65-142 132-178-27-22-52-56-65-102 44 14 79 32 115 4z" fill="#1f2937" opacity=".82"/>
+  <path d="M363 353c50 34 76 84 55 138 38 14 58 45 55 82-52-23-97-32-147-18 20-30 25-61 11-93-24 36-57 62-96 77 14-55 45-93 91-117-20-18-36-42-43-74 27 8 50 23 74 5z" fill="#fee2e2" opacity=".74"/>
+  <path d="M160 714h400l-36 96H196z" fill="#f8fafc" opacity=".84"/>
+  <text x="360" y="744" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="27" fill="#7f1d1d">Charizard ex 349/190</text>
+  <text x="360" y="779" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">SV4a: Shiny Treasure ex</text>
+  <text x="360" y="813" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="28" fill="#111827">$600</text>
+  <rect x="170" y="905" width="380" height="26" rx="13" fill="#111827" opacity=".55"/>
+  <text x="360" y="925" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#e5e7eb">Gem Mint (GM) / Shiny Treasure / Sample seed</text>
+</svg>
