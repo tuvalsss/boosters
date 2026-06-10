@@ -11,7 +11,6 @@ export interface Branch {
   packImage: string;
   packBackImage: string;
   packOpenedImage: string;
-  cardImages: [string, string];
   priceUsdc: number;
 }
 
@@ -24,7 +23,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/creature-front.svg',
     packBackImage: '/assets/brand-packs/creature-back.svg',
     packOpenedImage: '/assets/brand-packs/creature-opened.svg',
-    cardImages: ['/assets/brand-cards/creature-card.svg', '/assets/brand-cards/gold-card.svg'],
     priceUsdc: 59,
   },
   {
@@ -35,7 +33,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/adventure-front.svg',
     packBackImage: '/assets/brand-packs/adventure-back.svg',
     packOpenedImage: '/assets/brand-packs/adventure-opened.svg',
-    cardImages: ['/assets/brand-cards/adventure-card.svg', '/assets/brand-cards/vault-card.svg'],
     priceUsdc: 39,
   },
   {
@@ -46,7 +43,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/arcana-front.svg',
     packBackImage: '/assets/brand-packs/arcana-back.svg',
     packOpenedImage: '/assets/brand-packs/arcana-opened.svg',
-    cardImages: ['/assets/brand-cards/arcana-card.svg', '/assets/brand-cards/gold-card.svg'],
     priceUsdc: 49,
   },
   {
@@ -57,7 +53,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/sports-front.svg',
     packBackImage: '/assets/brand-packs/sports-back.svg',
     packOpenedImage: '/assets/brand-packs/sports-opened.svg',
-    cardImages: ['/assets/brand-cards/sports-card.svg', '/assets/brand-cards/vault-card.svg'],
     priceUsdc: 45,
   },
   {
@@ -68,7 +63,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/rookie-front.svg',
     packBackImage: '/assets/brand-packs/rookie-back.svg',
     packOpenedImage: '/assets/brand-packs/rookie-opened.svg',
-    cardImages: ['/assets/brand-cards/creature-card.svg', '/assets/brand-cards/sports-card.svg'],
     priceUsdc: 35,
   },
   {
@@ -79,7 +73,6 @@ export const BRANCHES: Branch[] = [
     packImage: '/assets/brand-packs/legend-front.svg',
     packBackImage: '/assets/brand-packs/legend-back.svg',
     packOpenedImage: '/assets/brand-packs/legend-opened.svg',
-    cardImages: ['/assets/brand-cards/gold-card.svg', '/assets/brand-cards/vault-card.svg'],
     priceUsdc: 89,
   },
 ];

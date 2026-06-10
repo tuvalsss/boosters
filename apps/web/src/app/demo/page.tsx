@@ -1,56 +1,30 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon, BoltIcon, LayersIcon, SparkleIcon, TrophyIcon } from '@/components/icons';
 import { PackArt } from '@/components/pack-art';
 import { useI18n } from '@/i18n/language-context';
-import { BRANCHES, type Branch } from '@/lib/branches';
+import { publicFetch } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { BRANCHES, type Branch } from '@/lib/branches';
+import type { EbayCardListing } from '@/lib/types';
 
 type Phase = 'idle' | 'opening' | 'revealed';
 
 interface DemoPrize {
+  id: string;
   name: string;
   rarity: string;
   value: number;
   image: string;
   accent: string;
+  sourceUrl: string;
+  seller: string | null;
+  grade: string | null;
 }
 
-const DEMO_RESULTS: DemoPrize[] = [
-  {
-    name: 'Volt Crown Alpha',
-    rarity: 'MYTHIC',
-    value: 312,
-    image: '/assets/brand-cards/creature-card.svg',
-    accent: '#facc15',
-  },
-  {
-    name: 'Vault Gold Signature',
-    rarity: 'LEGEND',
-    value: 248,
-    image: '/assets/brand-cards/gold-card.svg',
-    accent: '#f59e0b',
-  },
-  {
-    name: 'Ocean Relic PSA 10',
-    rarity: 'RARE',
-    value: 126,
-    image: '/assets/brand-cards/adventure-card.svg',
-    accent: '#22d3ee',
-  },
-  {
-    name: 'Rookie Icon Gem',
-    rarity: 'CHASE',
-    value: 184,
-    image: '/assets/brand-cards/sports-card.svg',
-    accent: '#fb7185',
-  },
-];
-
-const ROULETTE_ITEMS = Array.from({ length: 16 }, () => DEMO_RESULTS).flat();
 const REEL_ITEM_WIDTH_REM = 9.75;
 
 export default function DemoPage() {
@@ -61,6 +35,9 @@ export default function DemoPage() {
   const [resultIndex, setResultIndex] = useState(0);
   const [targetSlot, setTargetSlot] = useState(0);
   const [openCount, setOpenCount] = useState(0);
+  const [livePrizes, setLivePrizes] = useState<DemoPrize[]>([]);
+  const [loadingPrizes, setLoadingPrizes] = useState(true);
+  const [prizeError, setPrizeError] = useState<string | null>(null);
   const timer = useRef<number | null>(null);
 
   const selectedIndex = Math.max(
@@ -68,7 +45,36 @@ export default function DemoPage() {
     BRANCHES.findIndex((branch) => branch.key === selectedKey),
   );
   const selected = BRANCHES[selectedIndex] ?? BRANCHES[0]!;
-  const result = DEMO_RESULTS[resultIndex % DEMO_RESULTS.length]!;
+  const result = livePrizes.length ? livePrizes[resultIndex % livePrizes.length]! : null;
+  const resultAccent = result?.accent ?? selected.accent;
+  const rouletteItems = useMemo(() => buildRouletteItems(livePrizes), [livePrizes]);
+  const canOpen = livePrizes.length > 0 && !loadingPrizes;
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingPrizes(true);
+    publicFetch<EbayCardListing[]>('/catalog/ebay-prizes?take=32')
+      .then((rows) => {
+        if (!mounted) return;
+        setLivePrizes(rows.map(prizeFromListing));
+        setPrizeError(null);
+        setResultIndex(0);
+        setTargetSlot(0);
+        setPhase('idle');
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setLivePrizes([]);
+        setPrizeError((error as Error).message);
+      })
+      .finally(() => {
+        if (mounted) setLoadingPrizes(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(
     () => () => {
@@ -78,11 +84,12 @@ export default function DemoPage() {
   );
 
   const openPack = () => {
-    if (phase === 'opening') return;
+    if (phase === 'opening' || !canOpen) return;
     if (timer.current) window.clearTimeout(timer.current);
 
-    const nextResultIndex = (selectedIndex * 2 + openCount) % DEMO_RESULTS.length;
-    const nextSlot = 10 + openCount * DEMO_RESULTS.length + nextResultIndex;
+    const prizeCount = livePrizes.length;
+    const nextResultIndex = (selectedIndex * 3 + openCount) % prizeCount;
+    const nextSlot = 10 + (2 + (openCount % 4)) * prizeCount + nextResultIndex;
     setResultIndex(nextResultIndex);
     setTargetSlot(nextSlot);
     setPhase('opening');
@@ -111,7 +118,7 @@ export default function DemoPage() {
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <DemoStat icon={<BoltIcon />} label={t('demo.benefitOdds')} value="provably fair" />
-            <DemoStat icon={<LayersIcon />} label={t('demo.benefitVault')} value="vault 1:1" />
+            <DemoStat icon={<LayersIcon />} label={t('demo.benefitVault')} value="eBay sourced" />
             <DemoStat icon={<TrophyIcon />} label={t('demo.benefitKyc')} value="withdrawals" />
           </div>
 
@@ -136,7 +143,7 @@ export default function DemoPage() {
           <div
             className="absolute inset-0 opacity-70"
             style={{
-              background: `radial-gradient(circle at 78% 18%, ${selected.accent}55, transparent 34%), radial-gradient(circle at 10% 72%, ${result.accent}30, transparent 38%)`,
+              background: `radial-gradient(circle at 78% 18%, ${selected.accent}55, transparent 34%), radial-gradient(circle at 10% 72%, ${resultAccent}30, transparent 38%)`,
             }}
           />
 
@@ -148,7 +155,11 @@ export default function DemoPage() {
               <h2 className="mt-1 text-xl font-bold">{selected.name}</h2>
             </div>
             <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs font-semibold text-white/70">
-              {DEMO_RESULTS.length} {t('demo.possiblePrizes')}
+              {loadingPrizes
+                ? t('demo.loadingListings')
+                : livePrizes.length
+                  ? `${livePrizes.length} ${t('demo.ebayPrizes')}`
+                  : t('demo.importRequired')}
             </span>
           </div>
 
@@ -166,16 +177,29 @@ export default function DemoPage() {
 
               <PackRevealStage branch={selected} phase={phase} result={result} />
 
-              <div
-                className={[
-                  'absolute inset-x-0 bottom-2 z-30 transition duration-500',
-                  phase === 'idle' ? 'translate-y-5 opacity-0' : 'translate-y-0 opacity-100',
-                ].join(' ')}
-              >
-                <RouletteReel phase={phase} targetSlot={targetSlot} />
-              </div>
+              {rouletteItems.length > 0 && (
+                <div
+                  className={[
+                    'absolute inset-x-0 bottom-2 z-30 transition duration-500',
+                    phase === 'idle' ? 'translate-y-5 opacity-0' : 'translate-y-0 opacity-100',
+                  ].join(' ')}
+                >
+                  <RouletteReel phase={phase} targetSlot={targetSlot} items={rouletteItems} />
+                </div>
+              )}
 
-              {phase === 'revealed' && <WinnerReveal result={result} />}
+              {phase === 'revealed' && result && <WinnerReveal result={result} />}
+
+              {!loadingPrizes && livePrizes.length === 0 && (
+                <LiveEbayEmptyState error={prizeError} />
+              )}
+
+              {loadingPrizes && (
+                <div className="relative z-30 rounded-2xl border border-white/10 bg-black/65 px-5 py-4 text-center shadow-2xl backdrop-blur">
+                  <p className="text-sm font-bold text-white">{t('demo.loadingListings')}</p>
+                  <p className="mt-1 text-xs text-white/45">{t('demo.liveEbay')}</p>
+                </div>
+              )}
             </div>
 
             <div className="relative mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
@@ -186,14 +210,18 @@ export default function DemoPage() {
               <button
                 type="button"
                 onClick={openPack}
-                disabled={phase === 'opening'}
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-300 px-6 text-sm font-extrabold text-black transition hover:bg-emerald-200 disabled:cursor-wait disabled:opacity-70"
+                disabled={phase === 'opening' || !canOpen}
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-300 px-6 text-sm font-extrabold text-black transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-55"
               >
-                {phase === 'opening'
-                  ? t('demo.spinning')
-                  : phase === 'revealed'
-                    ? t('demo.openAgain')
-                    : t('demo.spin')}
+                {loadingPrizes
+                  ? t('demo.loadingListings')
+                  : !canOpen
+                    ? t('demo.importRequired')
+                    : phase === 'opening'
+                      ? t('demo.spinning')
+                      : phase === 'revealed'
+                        ? t('demo.openAgain')
+                        : t('demo.spin')}
               </button>
             </div>
           </div>
@@ -210,24 +238,42 @@ export default function DemoPage() {
           </div>
           <p className="max-w-xl text-sm leading-6 text-white/55">{t('demo.conversionCopy')}</p>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {DEMO_RESULTS.map((prize) => (
-            <div
-              key={prize.name}
-              className="grid grid-cols-[4rem_1fr] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3"
-            >
-              <span className="relative h-20 overflow-hidden rounded-xl bg-black/30">
-                <Image src={prize.image} alt="" fill className="object-contain p-2" />
-              </span>
-              <span>
-                <span className="block truncate text-sm font-bold text-white">{prize.name}</span>
-                <span className="mt-1 block text-xs font-semibold text-emerald-200">
-                  {prize.rarity} / ${prize.value}
+        {livePrizes.length === 0 ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-white/[0.025] px-5 py-8 text-center">
+            <p className="text-sm font-bold text-white">{t('demo.importTitle')}</p>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-white/50">
+              {t('demo.importCopy')}
+            </p>
+            <code className="mt-4 inline-flex rounded-xl border border-white/10 bg-black/35 px-3 py-2 text-xs text-white/65">
+              pnpm ebay:import-cards -- --limit 100
+            </code>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {livePrizes.slice(0, 8).map((prize) => (
+              <a
+                key={prize.id}
+                href={prize.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="grid grid-cols-[4rem_1fr] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:border-white/20 hover:bg-white/[0.06]"
+              >
+                <span className="relative h-20 overflow-hidden rounded-xl bg-black/30">
+                  <Image src={prize.image} alt="" fill className="object-contain p-1" />
                 </span>
-              </span>
-            </div>
-          ))}
-        </div>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-bold text-white">{prize.name}</span>
+                  <span className="mt-1 block text-xs font-semibold text-emerald-200">
+                    {prize.rarity} / {formatMoney(prize.value)}
+                  </span>
+                  <span className="mt-1 block truncate text-[11px] text-white/35">
+                    {t('demo.sourceLabel')}: eBay
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -298,7 +344,7 @@ function PackRevealStage({
 }: {
   branch: Branch;
   phase: Phase;
-  result: DemoPrize;
+  result: DemoPrize | null;
 }) {
   return (
     <div className="absolute top-3 z-10 flex h-[20rem] w-full items-start justify-center sm:top-1">
@@ -343,25 +389,35 @@ function PackRevealStage({
             className="pack-opened-image h-full"
             imageClassName="drop-shadow-2xl"
           />
-          <div className={`pack-emerging-card ${phase === 'revealed' ? 'is-revealed' : ''}`}>
-            <span className="hit-card-aura" style={{ backgroundColor: result.accent }} />
-            <Image
-              src={result.image}
-              alt=""
-              width={500}
-              height={700}
-              className="hit-card-image h-52 w-auto rounded-xl sm:h-60"
-            />
-            <span className="hit-card-shine" />
-            <span className="hit-card-scan" />
-          </div>
+          {result && (
+            <div className={`pack-emerging-card ${phase === 'revealed' ? 'is-revealed' : ''}`}>
+              <span className="hit-card-aura" style={{ backgroundColor: result.accent }} />
+              <Image
+                src={result.image}
+                alt={result.name}
+                width={500}
+                height={700}
+                className="hit-card-image h-52 w-auto rounded-xl object-contain sm:h-60"
+              />
+              <span className="hit-card-shine" />
+              <span className="hit-card-scan" />
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function RouletteReel({ phase, targetSlot }: { phase: Phase; targetSlot: number }) {
+function RouletteReel({
+  phase,
+  targetSlot,
+  items,
+}: {
+  phase: Phase;
+  targetSlot: number;
+  items: DemoPrize[];
+}) {
   const { t } = useI18n();
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/70 py-3 shadow-2xl backdrop-blur">
@@ -374,9 +430,9 @@ function RouletteReel({ phase, targetSlot }: { phase: Phase; targetSlot: number 
         ].join(' ')}
         style={{ transform: `translateX(-${targetSlot * REEL_ITEM_WIDTH_REM}rem)` }}
       >
-        {ROULETTE_ITEMS.map((item, index) => (
+        {items.map((item, index) => (
           <div
-            key={`${item.name}-${index}`}
+            key={`${item.id}-${index}`}
             className="grid w-36 shrink-0 grid-cols-[2.7rem_1fr] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] p-2"
           >
             <span className="relative h-12 overflow-hidden rounded-lg bg-black/30">
@@ -385,7 +441,7 @@ function RouletteReel({ phase, targetSlot }: { phase: Phase; targetSlot: number 
             <span className="min-w-0">
               <span className="block truncate text-xs font-bold text-white">{item.name}</span>
               <span className="block text-[11px] text-emerald-200">
-                {item.rarity} / ${item.value}
+                {item.rarity} / {formatMoney(item.value)}
               </span>
             </span>
           </div>
@@ -406,12 +462,34 @@ function WinnerReveal({ result }: { result: DemoPrize }) {
         {t('demo.resultLabel')}
       </p>
       <p className="mt-1 truncate font-bold">{result.name}</p>
-      <div className="mt-2 flex gap-2 text-xs">
+      <div className="mt-2 flex flex-wrap gap-2 text-xs">
         <span className="rounded-full bg-white/10 px-2.5 py-1 text-white/80">{result.rarity}</span>
         <span className="rounded-full bg-emerald-400 px-2.5 py-1 font-bold text-black">
-          ${result.value}
+          {formatMoney(result.value)}
         </span>
+        <a
+          href={result.sourceUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-full border border-white/10 px-2.5 py-1 text-white/70 hover:text-white"
+        >
+          {t('demo.viewListing')}
+        </a>
       </div>
+    </div>
+  );
+}
+
+function LiveEbayEmptyState({ error }: { error: string | null }) {
+  const { t } = useI18n();
+  return (
+    <div className="relative z-30 mx-auto max-w-md rounded-2xl border border-white/10 bg-black/70 p-5 text-center shadow-2xl backdrop-blur">
+      <p className="text-sm font-extrabold text-white">{t('demo.importTitle')}</p>
+      <p className="mt-2 text-sm leading-6 text-white/55">{t('demo.importCopy')}</p>
+      <code className="mt-4 inline-flex rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-xs text-white/70">
+        pnpm ebay:import-cards -- --limit 100
+      </code>
+      {error && <p className="mt-3 text-xs text-amber-200/75">{t('demo.loadError')}</p>}
     </div>
   );
 }
@@ -426,4 +504,48 @@ function DemoStat({ icon, label, value }: { icon: ReactNode; label: string; valu
       <p className="mt-1 text-sm font-semibold text-white/85">{value}</p>
     </div>
   );
+}
+
+function buildRouletteItems(prizes: DemoPrize[]): DemoPrize[] {
+  if (!prizes.length) return [];
+  const repeats = Math.max(6, Math.ceil(150 / prizes.length));
+  return Array.from({ length: repeats }, () => prizes).flat();
+}
+
+function prizeFromListing(listing: EbayCardListing): DemoPrize {
+  const value = Number(listing.priceValue);
+  return {
+    id: listing.id,
+    name: listing.cardName || listing.title,
+    rarity: rarityFromTier(listing.tier),
+    value: Number.isFinite(value) ? value : 0,
+    image: listing.imageUrl,
+    accent: accentForListing(listing),
+    sourceUrl: listing.itemAffiliateWebUrl ?? listing.itemWebUrl,
+    seller: listing.sellerUsername,
+    grade: listing.grade,
+  };
+}
+
+function rarityFromTier(tier: string): string {
+  const normalized = tier.trim().toUpperCase();
+  if (normalized === 'GRAIL') return 'GRAIL';
+  if (normalized === 'CHASE') return 'CHASE';
+  if (normalized === 'RARE') return 'RARE';
+  if (normalized === 'UNCOMMON') return 'UNCOMMON';
+  return 'COMMON';
+}
+
+function accentForListing(listing: EbayCardListing): string {
+  if (listing.tier === 'grail') return '#facc15';
+  if (listing.tier === 'chase') return '#fb7185';
+  if (listing.tier === 'rare') return '#22d3ee';
+  if (listing.category === 'POKEMON') return '#60a5fa';
+  if (listing.category === 'SPORTS') return '#f87171';
+  if (listing.category === 'TCG') return '#a78bfa';
+  return '#86efac';
+}
+
+function formatMoney(value: number): string {
+  return `$${value.toLocaleString(undefined, { maximumFractionDigits: value >= 100 ? 0 : 2 })}`;
 }

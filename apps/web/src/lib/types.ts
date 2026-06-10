@@ -167,7 +167,13 @@ export interface PackPoolEntry {
   consumed: boolean;
   weight: number;
   oddsPct: number;
-  card: { cardName: string; grader: string; grade: string | null; category: string };
+  card: {
+    cardName: string;
+    grader: string;
+    grade: string | null;
+    category: string;
+    photos?: { url: string; kind: string }[];
+  };
 }
 
 export interface PackDetail {

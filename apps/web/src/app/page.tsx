@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/icons';
 import { PackArt } from '@/components/pack-art';
@@ -8,6 +9,11 @@ import { useI18n } from '@/i18n/language-context';
 import { BRANCHES } from '@/lib/branches';
 
 const TEST_MODE_COPY = 'devnet sandbox - no real funds';
+const CAMPAIGN_IMAGES = [
+  '/assets/brand-campaign/ambassadors-hero.png',
+  '/assets/brand-campaign/operations-team.png',
+  '/assets/brand-campaign/kiosk-ambassadors.png',
+] as const;
 
 export default function HomePage() {
   const { t } = useI18n();
@@ -51,22 +57,35 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="order-1 flex justify-center lg:order-2">
-            <div className="relative h-64 w-72 sm:h-80 sm:w-96">
-              {BRANCHES.slice(0, 3).map((branch, index) => (
-                <PackArt
-                  key={branch.key}
-                  src={branch.packImage}
-                  alt={`${branch.name} pack`}
-                  className="absolute left-1/2 top-1/2 h-60 w-auto rounded-2xl shadow-2xl ring-1 ring-white/10 sm:h-72"
-                  style={{
-                    transform: `translate(-50%,-50%) translateX(${(index - 1) * 42}%) rotate(${
-                      (index - 1) * 10
-                    }deg)`,
-                    zIndex: index === 1 ? 3 : 1,
-                  }}
+          <div className="order-1 lg:order-2">
+            <div className="brand-campaign-rotator relative h-72 overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/40 sm:h-96">
+              {CAMPAIGN_IMAGES.map((src, index) => (
+                <Image
+                  key={src}
+                  src={src}
+                  alt="Boosters brand ambassador campaign"
+                  fill
+                  priority={index === 0}
+                  sizes="(min-width: 1024px) 44vw, 92vw"
+                  className="brand-campaign-frame object-cover"
+                  style={{ animationDelay: `${index * 6}s` }}
                 />
               ))}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/5 to-transparent" />
+              <div className="absolute bottom-4 left-4 flex items-end gap-2">
+                {BRANCHES.slice(0, 3).map((branch, index) => (
+                  <PackArt
+                    key={branch.key}
+                    src={branch.packImage}
+                    alt={`${branch.name} pack`}
+                    className="h-24 w-auto drop-shadow-2xl sm:h-32"
+                    style={{
+                      transform: `translateX(${index * -0.35}rem) rotate(${(index - 1) * 7}deg)`,
+                      zIndex: 5 - index,
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BRANCHES, branchByKey, type BranchKey } from '@/lib/branches';
@@ -48,23 +47,19 @@ export default function BranchPage({ params }: { params: { key: string } }) {
         </div>
       </section>
 
-      <h2 className="mb-4 mt-10 text-xl font-bold">Recent pulls</h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[...branch.cardImages, ...branch.cardImages].map((src, i) => (
-          <div
-            key={i}
-            className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]"
-          >
-            <Image
-              src={src}
-              alt={`${branch.name} graded card`}
-              width={500}
-              height={700}
-              className="h-auto w-full"
-            />
-          </div>
-        ))}
-      </div>
+      <section className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+        <h2 className="text-xl font-bold">Live inventory</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+          Pull images come only from vaulted card photos and imported eBay listing images. This
+          branch no longer displays generated card art as recent pulls.
+        </p>
+        <Link
+          href="/demo"
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-5 py-2.5 text-sm font-semibold text-white/85 hover:bg-white/5"
+        >
+          Try live eBay demo <ArrowRightIcon className="h-4 w-4" />
+        </Link>
+      </section>
     </div>
   );
 }

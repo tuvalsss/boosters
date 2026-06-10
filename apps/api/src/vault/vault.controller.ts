@@ -1,8 +1,19 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { VaultItemState, type User } from '@boosters/db';
-import { CurrentUser, Roles } from '../auth/auth.decorators.js';
+import { CurrentUser, Public, Roles } from '../auth/auth.decorators.js';
 import { VaultService } from './vault.service.js';
 import { CreateIntakeDto, ManagedCategoryDto, SetGradeDto, UpdateCardDto } from './vault.dto.js';
+
+@Controller('catalog')
+@Public()
+export class CatalogController {
+  constructor(private readonly vault: VaultService) {}
+
+  @Get('ebay-prizes')
+  ebayPrizes(@Query('take') take?: string) {
+    return this.vault.listPublicEbayPrizes(Number(take) || 32);
+  }
+}
 
 /**
  * Admin / Ops vault console. Role-gated to staff. Every mutation is audited by

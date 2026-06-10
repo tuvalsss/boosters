@@ -101,6 +101,39 @@ export class VaultService {
     });
   }
 
+  async listPublicEbayPrizes(take = 32) {
+    return this.prisma.ebayCardListing.findMany({
+      where: {
+        status: 'ACTIVE',
+      },
+      orderBy: [{ priceValue: 'desc' }, { lastSeenAt: 'desc' }],
+      take: Math.min(Math.max(take, 1), 100),
+      select: {
+        id: true,
+        ebayItemId: true,
+        title: true,
+        cardName: true,
+        category: true,
+        setName: true,
+        grader: true,
+        grade: true,
+        year: true,
+        tier: true,
+        condition: true,
+        imageUrl: true,
+        itemWebUrl: true,
+        itemAffiliateWebUrl: true,
+        priceValue: true,
+        priceCurrency: true,
+        sellerUsername: true,
+        sellerFeedbackPercentage: true,
+        sourceQuery: true,
+        status: true,
+        lastSeenAt: true,
+      },
+    });
+  }
+
   async createIntakeFromEbayListing(actor: User, listingId: string): Promise<VaultItem> {
     const listing = await this.prisma.ebayCardListing.findUnique({ where: { id: listingId } });
     if (!listing) throw new NotFoundException('eBay listing not found');

@@ -433,6 +433,33 @@ body {
   animation: carousel-breathe 3.8s ease-in-out infinite;
 }
 
+.brand-campaign-rotator {
+  isolation: isolate;
+}
+
+.brand-campaign-frame {
+  opacity: 0;
+  transform: scale(1.035);
+  animation: brand-campaign-cycle 18s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes brand-campaign-cycle {
+  0% {
+    opacity: 0;
+    transform: scale(1.045);
+  }
+  7%,
+  31% {
+    opacity: 1;
+  }
+  38%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
 .pack-art-shell {
   border-radius: 1.15rem;
   filter: drop-shadow(0 1.25rem 1.6rem rgba(0, 0, 0, 0.42));
@@ -532,8 +559,13 @@ body {
   .pack-rip-right.is-opening,
   .tear-flash.is-opening,
   .winner-pop,
-  .carousel-breathe {
+  .carousel-breathe,
+  .brand-campaign-frame {
     animation: none;
+  }
+
+  .brand-campaign-frame:first-child {
+    opacity: 1;
   }
 
   .roulette-track {

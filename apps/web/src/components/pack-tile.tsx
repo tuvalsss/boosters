@@ -1,9 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Branch } from '@/lib/branches';
 import { PackArt } from './pack-art';
 
-/** Open-Packs grid tile: a graded card peeking out behind a booster pack. */
+/** Open-Packs grid tile. Prize cards render only from real vault/eBay photos elsewhere. */
 export function PackTile({ branch }: { branch: Branch }) {
   return (
     <Link
@@ -11,15 +10,11 @@ export function PackTile({ branch }: { branch: Branch }) {
       className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20 hover:bg-white/[0.06]"
     >
       <div className="relative mx-auto flex h-56 items-end justify-center">
-        {/* card peeking behind */}
-        <Image
-          src={branch.cardImages[0]}
-          alt=""
-          width={500}
-          height={700}
-          className="absolute bottom-6 h-44 w-auto -rotate-6 rounded-lg opacity-90 shadow-lg transition group-hover:-translate-y-2"
+        <span
+          aria-hidden
+          className="absolute bottom-10 h-40 w-40 rounded-full opacity-45 blur-3xl transition group-hover:scale-[1.08]"
+          style={{ backgroundColor: branch.accent }}
         />
-        {/* pack in front */}
         <PackArt
           src={branch.packImage}
           alt={`${branch.name} pack`}

@@ -43,8 +43,7 @@ export default function PackDetailPage() {
 
   const fallbackBranch = BRANCHES[Math.abs(hash(pack.id)) % BRANCHES.length]!;
   const packAssets = packAssetsFor(pack.coverImageUrl, fallbackBranch);
-  const previewPrizeImage =
-    won?.result?.physicalCard.photos?.[0]?.url ?? fallbackBranch.cardImages[0];
+  const previewPrizeImage = won?.result?.physicalCard.photos?.[0]?.url ?? null;
 
   const open = async () => {
     if (!authenticated) return login();
@@ -112,18 +111,20 @@ export default function PackDetailPage() {
                 alt={`${pack.name} opened pack`}
                 className="pack-opened-image h-full"
               />
-              <div className={`pack-emerging-card ${phase === 'done' ? 'is-revealed' : ''}`}>
-                <span className="hit-card-aura" style={{ backgroundColor: pack.accentColor }} />
-                <Image
-                  src={previewPrizeImage}
-                  alt=""
-                  width={500}
-                  height={700}
-                  className="hit-card-image h-52 w-auto rounded-xl"
-                />
-                <span className="hit-card-shine" />
-                <span className="hit-card-scan" />
-              </div>
+              {previewPrizeImage && (
+                <div className={`pack-emerging-card ${phase === 'done' ? 'is-revealed' : ''}`}>
+                  <span className="hit-card-aura" style={{ backgroundColor: pack.accentColor }} />
+                  <Image
+                    src={previewPrizeImage}
+                    alt={won?.result?.physicalCard.cardName ?? ''}
+                    width={500}
+                    height={700}
+                    className="hit-card-image h-52 w-auto rounded-xl object-contain"
+                  />
+                  <span className="hit-card-shine" />
+                  <span className="hit-card-scan" />
+                </div>
+              )}
             </div>
           )}
         </div>
