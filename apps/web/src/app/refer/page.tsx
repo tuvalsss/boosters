@@ -1,15 +1,36 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { GiftIcon } from '@/components/icons';
 import { useAuth } from '@/lib/auth-context';
+import { usd } from '@/lib/api';
 
-const REWARDS = [
-  ['Friend joins', 'Priority vault onboarding'],
-  ['First pack opened', '$5 sandbox credit'],
-  ['First marketplace trade', '2% fee rebate pool'],
-];
+type ReferralSummary = {
+  code: string;
+  referredBy: { id: string; displayName: string | null; email: string | null } | null;
+  stats: {
+    joined: number;
+    pendingUsdc: string;
+    availableUsdc: string;
+    paidUsdc: string;
+    totalUsdc: string;
+  };
+  referrals: Array<{
+    id: string;
+    displayName: string | null;
+    email: string | null;
+    createdAt: string;
+  }>;
+  rewards: Array<{
+    id: string;
+    eventType: string;
+    status: string;
+    amountUsdc: string;
+    createdAt: string;
+    referredUser: { id: string; displayName: string | null; email: string | null };
+  }>;
+};
 
 const NEXT_ACTIONS = [
   { label: 'Open packs', href: '/packs' },
@@ -19,22 +40,41 @@ const NEXT_ACTIONS = [
 ];
 
 export default function ReferPage() {
-  const { ready, authenticated, dbUser, login } = useAuth();
+  const { ready, authenticated, login, apiFetch } = useAuth();
   const [origin, setOrigin] = useState('');
   const [copied, setCopied] = useState(false);
+  const [summary, setSummary] = useState<ReferralSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
 
-  const referralCode = useMemo(() => {
-    const raw = dbUser?.displayName || dbUser?.email || dbUser?.id || 'BOOSTERS-VAULT';
-    return raw
-      .replace(/[^a-z0-9]/gi, '')
-      .slice(0, 10)
-      .toUpperCase()
-      .padEnd(6, 'X');
-  }, [dbUser]);
+  useEffect(() => {
+    if (!authenticated) {
+      setSummary(null);
+      setError(null);
+      return;
+    }
+
+    let active = true;
+    apiFetch<ReferralSummary>('/me/referrals')
+      .then((data) => {
+        if (!active) return;
+        setSummary(data);
+        setError(null);
+      })
+      .catch((err: Error) => {
+        if (!active) return;
+        setError(err.message);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authenticated, apiFetch]);
+
+  const referralCode = authenticated ? (summary?.code ?? 'LOADING') : 'SIGN-IN';
   const referralLink = `${origin || 'http://localhost:3100'}?ref=${encodeURIComponent(referralCode)}`;
 
   const copy = async () => {
@@ -52,15 +92,15 @@ export default function ReferPage() {
           </span>
           <h1 className="mt-5 text-3xl font-bold tracking-tight">Refer & Earn</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/60">
-            Invite collectors and track rewards across onboarding, pack activity, and marketplace
-            volume. Rewards settle through the same account ledger used by the rest of Boosters.
+            Invite collectors and track rewards across onboarding and confirmed deposits. Bonuses
+            settle through the same account ledger used by the rest of Boosters.
           </p>
 
           <div className="mt-7 rounded-2xl border border-white/10 bg-black/30 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs uppercase tracking-widest text-white/40">Referral code</p>
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/55">
-                {authenticated ? 'Account linked' : 'Guest preview'}
+                {authenticated ? 'Account linked' : 'Sign in to activate'}
               </span>
             </div>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -71,7 +111,8 @@ export default function ReferPage() {
                 <button
                   type="button"
                   onClick={copy}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-white/90"
+                  disabled={!summary}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:bg-white/40"
                 >
                   {copied ? 'Copied' : 'Copy link'}
                 </button>
@@ -88,6 +129,17 @@ export default function ReferPage() {
             <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 font-mono text-xs text-white/55">
               {referralLink}
             </div>
+            {summary?.referredBy && (
+              <p className="mt-3 text-xs text-white/45">
+                Joined through{' '}
+                {summary.referredBy.displayName ?? summary.referredBy.email ?? 'a collector'}.
+              </p>
+            )}
+            {error && (
+              <p className="mt-3 rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs text-amber-100">
+                {error}
+              </p>
+            )}
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-4">
@@ -105,25 +157,48 @@ export default function ReferPage() {
 
         <aside className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="text-lg font-bold tracking-tight">Reward track</h2>
-          <div className="mt-4 space-y-3">
-            {REWARDS.map(([label, value], index) => (
-              <div key={label} className="flex gap-3 rounded-xl bg-white/[0.04] p-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-black text-black">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold">{label}</p>
-                  <p className="mt-1 text-xs text-white/45">{value}</p>
-                </div>
-              </div>
-            ))}
+          <div className="mt-4 grid gap-3">
+            <Metric label="Collectors joined" value={summary?.stats.joined.toString() ?? '0'} />
+            <Metric label="Available bonus" value={usd(summary?.stats.availableUsdc ?? '0')} />
+            <Metric label="Pending bonus" value={usd(summary?.stats.pendingUsdc ?? '0')} />
+            <Metric label="Lifetime bonus" value={usd(summary?.stats.totalUsdc ?? '0')} />
           </div>
-          <p className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-300/10 px-3 py-3 text-xs leading-5 text-emerald-50/70">
-            Referral rewards should be finalized by backend events once a real provider is
-            connected. The page is wired to the live account state and ready for that endpoint.
-          </p>
+
+          <div className="mt-5 border-t border-white/10 pt-4">
+            <p className="text-xs uppercase tracking-widest text-white/40">Latest rewards</p>
+            <div className="mt-3 space-y-2">
+              {summary?.rewards.length ? (
+                summary.rewards.slice(0, 4).map((reward) => (
+                  <div key={reward.id} className="rounded-xl bg-white/[0.04] px-3 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold">{usd(reward.amountUsdc)}</p>
+                      <span className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white/50">
+                        {reward.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-white/45">
+                      {reward.referredUser.displayName ?? reward.referredUser.email ?? 'Collector'}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="rounded-xl bg-white/[0.04] px-3 py-3 text-xs leading-5 text-white/45">
+                  Rewards appear here after referred users complete confirmed deposits.
+                </p>
+              )}
+            </div>
+          </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-white/[0.04] px-3 py-3">
+      <p className="text-xs text-white/45">{label}</p>
+      <p className="mt-1 text-lg font-black text-white">{value}</p>
     </div>
   );
 }

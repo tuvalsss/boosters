@@ -175,6 +175,7 @@ enum OrderType {
   RAFFLE_TICKET
   BUYBACK_PAYOUT
   CONSIGNMENT_PAYOUT
+  REFERRAL_BONUS
   REFUND
   DEPOSIT // USDC on-ramp into custodial balance
   WITHDRAWAL // USDC off-ramp out of custodial balance
@@ -186,6 +187,13 @@ enum OrderStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+enum ReferralRewardStatus {
+  PENDING
+  AVAILABLE
+  PAID
+  VOID
 }
 
 // Double-entry ledger primitives.
@@ -222,6 +230,9 @@ model User {
   email           String?     @unique
   walletAddress   String?     @unique
   displayName     String?
+  referralCode    String?     @unique
+  referredById    String?
+  referredBy      User?       @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   role            UserRole    @default(USER)
   kycStatus       KycStatus   @default(NONE)
   kycProviderRef  String?
@@ -231,23 +242,27 @@ model User {
   updatedAt       DateTime    @updatedAt
 
   // Relations
-  ownedVaultItems VaultItem[]     @relation("VaultItemOwner")
-  ownedTokens     Token[]         @relation("TokenOwner")
-  submissions     Submission[]
-  listings        Listing[]       @relation("ListingSeller")
-  packOpenings    PackOpening[]
-  raffleTickets   RaffleTicket[]
-  wonRaffles      Raffle[]        @relation("RaffleWinner")
-  buybackQuotes   BuybackQuote[]
-  buyOrders       Order[]         @relation("OrderBuyer")
-  sellOrders      Order[]         @relation("OrderSeller")
-  ledgerEntries   LedgerEntry[]
-  auditLogs       AuditLog[]      @relation("AuditActor")
-  redemptions     Redemption[]
-  kycSubmissions  KycSubmission[]
+  referrals          User[]           @relation("UserReferrals")
+  ownedVaultItems    VaultItem[]      @relation("VaultItemOwner")
+  ownedTokens        Token[]          @relation("TokenOwner")
+  submissions        Submission[]
+  listings           Listing[]        @relation("ListingSeller")
+  packOpenings       PackOpening[]
+  raffleTickets      RaffleTicket[]
+  wonRaffles         Raffle[]         @relation("RaffleWinner")
+  buybackQuotes      BuybackQuote[]
+  buyOrders          Order[]          @relation("OrderBuyer")
+  sellOrders         Order[]          @relation("OrderSeller")
+  earnedReferrals    ReferralReward[] @relation("ReferralRewardReferrer")
+  triggeredReferrals ReferralReward[] @relation("ReferralRewardReferredUser")
+  ledgerEntries      LedgerEntry[]
+  auditLogs          AuditLog[]       @relation("AuditActor")
+  redemptions        Redemption[]
+  kycSubmissions     KycSubmission[]
 
   @@index([role])
   @@index([kycStatus])
+  @@index([referredById])
 }
 
 model KycSubmission {
@@ -678,7 +693,9 @@ model Order {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
-  ledgerEntries LedgerEntry[]
+  ledgerEntries        LedgerEntry[]
+  referralSourceReward ReferralReward? @relation("ReferralRewardSourceOrder")
+  referralPayoutReward ReferralReward? @relation("ReferralRewardPayoutOrder")
 
   @@index([type])
   @@index([status])
@@ -704,6 +721,27 @@ model LedgerEntry {
   @@index([orderId])
   @@index([accountType])
   @@index([userId])
+}
+
+model ReferralReward {
+  id             String               @id @default(cuid())
+  referrerId     String
+  referrer       User                 @relation("ReferralRewardReferrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId String
+  referredUser   User                 @relation("ReferralRewardReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+  sourceOrderId  String?              @unique
+  sourceOrder    Order?               @relation("ReferralRewardSourceOrder", fields: [sourceOrderId], references: [id], onDelete: SetNull)
+  payoutOrderId  String?              @unique
+  payoutOrder    Order?               @relation("ReferralRewardPayoutOrder", fields: [payoutOrderId], references: [id], onDelete: SetNull)
+  eventType      String
+  status         ReferralRewardStatus @default(PENDING)
+  amountUsdc     Decimal              @db.Decimal(18, 6)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([referrerId])
+  @@index([referredUserId])
+  @@index([status])
 }
 
 // ----------------------------------------------------------------------------

@@ -5,6 +5,7 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { PrivyAuthBridge, UnconfiguredAuthBridge } from '@/lib/auth-context';
 import { LanguageProvider } from '@/i18n/language-context';
+import { ReferralCapture } from './referral-capture';
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? '';
 
@@ -42,7 +43,10 @@ export function Providers({ children }: { children: ReactNode }) {
           },
         }}
       >
-        <PrivyAuthBridge>{children}</PrivyAuthBridge>
+        <PrivyAuthBridge>
+          <ReferralCapture />
+          {children}
+        </PrivyAuthBridge>
       </PrivyProvider>
     </LanguageProvider>
   );

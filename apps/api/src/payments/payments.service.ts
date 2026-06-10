@@ -14,6 +14,8 @@ import { PRISMA } from '../prisma/prisma.module.js';
 import { AuditService } from '../audit/audit.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 
+const REFERRAL_BONUS_RATE = new Prisma.Decimal('0.05');
+
 export interface OnrampSession {
   reference: string;
   provider: 'sandbox' | 'coinflow' | 'stripe';
@@ -133,7 +135,12 @@ export class PaymentsService {
           memo: 'On-ramp deposit',
         },
       ]);
-      return tx.order.update({ where: { id: order.id }, data: { status: 'COMPLETED' } });
+      const completedOrder = await tx.order.update({
+        where: { id: order.id },
+        data: { status: 'COMPLETED' },
+      });
+      await this.creditReferralBonus(tx, completedOrder);
+      return completedOrder;
     });
     await this.audit.log({
       actorId: order.buyerId,
@@ -375,6 +382,68 @@ export class PaymentsService {
       typescript: true,
     });
     return this.stripe;
+  }
+
+  private async creditReferralBonus(tx: Prisma.TransactionClient, sourceOrder: Order) {
+    if (sourceOrder.type !== 'DEPOSIT' || !sourceOrder.buyerId) return;
+
+    const referredUser = await tx.user.findUnique({
+      where: { id: sourceOrder.buyerId },
+      select: { referredById: true },
+    });
+    const referrerId = referredUser?.referredById;
+    if (!referrerId || referrerId === sourceOrder.buyerId) return;
+
+    const existing = await tx.referralReward.findUnique({
+      where: { sourceOrderId: sourceOrder.id },
+    });
+    if (existing) return;
+
+    const amount = sourceOrder.amountUsdc.mul(REFERRAL_BONUS_RATE).toDecimalPlaces(6);
+    if (amount.lte(0)) return;
+
+    const payoutOrder = await tx.order.create({
+      data: {
+        type: 'REFERRAL_BONUS',
+        status: 'COMPLETED',
+        buyerId: referrerId,
+        amountUsdc: amount,
+        idempotencyKey: `referral_${sourceOrder.id}`,
+        metadata: {
+          sourceOrderId: sourceOrder.id,
+          referredUserId: sourceOrder.buyerId,
+          bonusRate: REFERRAL_BONUS_RATE.toString(),
+        },
+      },
+    });
+
+    await this.ledger.post(tx, payoutOrder.id, [
+      {
+        accountType: 'EXTERNAL',
+        direction: 'DEBIT',
+        amountUsdc: amount,
+        memo: 'Referral bonus',
+      },
+      {
+        accountType: 'USER_WALLET',
+        userId: referrerId,
+        direction: 'CREDIT',
+        amountUsdc: amount,
+        memo: 'Referral bonus',
+      },
+    ]);
+
+    await tx.referralReward.create({
+      data: {
+        referrerId,
+        referredUserId: sourceOrder.buyerId,
+        sourceOrderId: sourceOrder.id,
+        payoutOrderId: payoutOrder.id,
+        eventType: 'DEPOSIT_COMPLETED',
+        status: 'AVAILABLE',
+        amountUsdc: amount,
+      },
+    });
   }
 }
 
