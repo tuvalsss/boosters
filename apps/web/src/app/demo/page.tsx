@@ -27,6 +27,7 @@ interface DemoPrize {
 }
 
 const REEL_ITEM_WIDTH_REM = 9.75;
+const ROULETTE_FALLBACK_MS = 8700;
 const SAMPLE_PRIZES: DemoPrize[] = [
   {
     id: 'sample-charizard-ex-349-psa10',
@@ -108,6 +109,7 @@ export default function DemoPage() {
   const [selectedKey, setSelectedKey] = useState(BRANCHES[0]!.key);
   const [phase, setPhase] = useState<Phase>('idle');
   const [resultIndex, setResultIndex] = useState(0);
+  const [pendingResultIndex, setPendingResultIndex] = useState<number | null>(null);
   const [targetSlot, setTargetSlot] = useState(0);
   const [openCount, setOpenCount] = useState(0);
   const [livePrizes, setLivePrizes] = useState<DemoPrize[]>([]);
@@ -121,7 +123,8 @@ export default function DemoPage() {
     BRANCHES.findIndex((branch) => branch.key === selectedKey),
   );
   const selected = BRANCHES[selectedIndex] ?? BRANCHES[0]!;
-  const result = livePrizes.length ? livePrizes[resultIndex % livePrizes.length]! : null;
+  const result =
+    phase === 'revealed' && livePrizes.length ? livePrizes[resultIndex % livePrizes.length]! : null;
   const resultAccent = result?.accent ?? selected.accent;
   const rouletteItems = useMemo(() => buildRouletteItems(livePrizes), [livePrizes]);
   const canOpen = livePrizes.length > 0 && !loadingPrizes;
@@ -138,6 +141,7 @@ export default function DemoPage() {
         setPrizeSource(imported.length ? 'ebay' : 'sample');
         setPrizeError(null);
         setResultIndex(0);
+        setPendingResultIndex(null);
         setTargetSlot(0);
         setPhase('idle');
       })
@@ -146,6 +150,7 @@ export default function DemoPage() {
         setLivePrizes(SAMPLE_PRIZES);
         setPrizeSource('sample');
         setPrizeError((error as Error).message);
+        setPendingResultIndex(null);
       })
       .finally(() => {
         if (mounted) setLoadingPrizes(false);
@@ -169,15 +174,26 @@ export default function DemoPage() {
 
     const prizeCount = livePrizes.length;
     const nextResultIndex = (selectedIndex * 3 + openCount) % prizeCount;
-    const nextSlot = 20 + (5 + (openCount % 4)) * prizeCount + nextResultIndex;
-    setResultIndex(nextResultIndex);
+    const nextSlot = 26 + (7 + (openCount % 4)) * prizeCount + nextResultIndex;
+    setPendingResultIndex(nextResultIndex);
     setTargetSlot(nextSlot);
     setPhase('opening');
 
     timer.current = window.setTimeout(() => {
+      setResultIndex(nextResultIndex);
+      setPendingResultIndex(null);
       setPhase('revealed');
       setOpenCount((count) => count + 1);
-    }, 5200);
+    }, ROULETTE_FALLBACK_MS);
+  };
+
+  const settleRoulette = () => {
+    if (phase !== 'opening' || pendingResultIndex === null) return;
+    if (timer.current) window.clearTimeout(timer.current);
+    setResultIndex(pendingResultIndex);
+    setPendingResultIndex(null);
+    setPhase('revealed');
+    setOpenCount((count) => count + 1);
   };
 
   return (
@@ -268,7 +284,12 @@ export default function DemoPage() {
                     phase === 'idle' ? 'translate-y-5 opacity-0' : 'translate-y-0 opacity-100',
                   ].join(' ')}
                 >
-                  <RouletteReel phase={phase} targetSlot={targetSlot} items={rouletteItems} />
+                  <RouletteReel
+                    phase={phase}
+                    targetSlot={targetSlot}
+                    items={rouletteItems}
+                    onSettled={settleRoulette}
+                  />
                 </div>
               )}
 
@@ -502,10 +523,12 @@ function RouletteReel({
   phase,
   targetSlot,
   items,
+  onSettled,
 }: {
   phase: Phase;
   targetSlot: number;
   items: DemoPrize[];
+  onSettled: () => void;
 }) {
   const { t } = useI18n();
   return (
@@ -518,6 +541,11 @@ function RouletteReel({
           phase === 'idle' ? 'is-idle' : '',
         ].join(' ')}
         style={{ transform: `translateX(-${targetSlot * REEL_ITEM_WIDTH_REM}rem)` }}
+        onTransitionEnd={(event) => {
+          if (event.currentTarget === event.target && event.propertyName === 'transform') {
+            onSettled();
+          }
+        }}
       >
         {items.map((item, index) => (
           <div
