@@ -1,12 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { usd } from '@/lib/api';
 import type {
   KycDocumentType,
   KycIdentityDocumentType,
   KycStatus,
   KycStatusResponse,
+  WalletData,
 } from '@/lib/types';
 import { useI18n } from '@/i18n/language-context';
 import { GuestConversionPanel } from '@/components/guest-conversion-panel';
@@ -23,17 +26,31 @@ const DOCUMENT_TYPES: { value: KycIdentityDocumentType; labelKey: string }[] = [
   { value: 'DRIVERS_LICENSE', labelKey: 'kyc.driversLicense' },
   { value: 'PASSPORT', labelKey: 'kyc.passport' },
 ];
+const ACCOUNT_ACTIONS = [
+  { label: 'Portfolio', href: '/portfolio' },
+  { label: 'Open packs', href: '/packs' },
+  { label: 'Marketplace', href: '/marketplace' },
+  { label: 'Submit card', href: '/submit' },
+];
 
 export default function AccountPage() {
   const { ready, authenticated, dbUser, refreshMe, apiFetch } = useAuth();
   const { t } = useI18n();
   const [displayName, setDisplayName] = useState('');
+  const [wallet, setWallet] = useState<WalletData | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setDisplayName(dbUser?.displayName ?? '');
   }, [dbUser?.displayName]);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    apiFetch<WalletData>('/wallet')
+      .then(setWallet)
+      .catch(() => setWallet(null));
+  }, [apiFetch, authenticated]);
 
   if (!ready) return <Centered>{t('common.loading')}</Centered>;
   if (!authenticated || !dbUser) {
@@ -59,8 +76,26 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10 lg:px-8">
+    <div className="mx-auto w-full max-w-4xl px-4 py-10 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight">{t('account.title')}</h1>
+
+      <section className="mt-6 grid gap-3 sm:grid-cols-3">
+        <ProfileStat label={t('portfolio.balance')} value={usd(wallet?.balanceUsdc ?? '0')} />
+        <ProfileStat label={t('portfolio.holdings')} value={String(wallet?.holdings.length ?? 0)} />
+        <ProfileStat label={t('portfolio.history')} value={String(wallet?.orders.length ?? 0)} />
+      </section>
+
+      <section className="mt-3 grid gap-3 sm:grid-cols-4">
+        {ACCOUNT_ACTIONS.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-3 text-sm font-semibold text-white/75 transition hover:border-white/20 hover:bg-white/[0.06]"
+          >
+            {action.label}
+          </Link>
+        ))}
+      </section>
 
       <section className="mt-6 space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
         <Field label={t('account.email')} value={dbUser.email ?? '-'} />
@@ -98,6 +133,15 @@ export default function AccountPage() {
       <KycPanel />
 
       {msg && <p className="mt-4 rounded-xl bg-white/5 px-4 py-3 text-sm text-white/80">{msg}</p>}
+    </div>
+  );
+}
+
+function ProfileStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <p className="text-xs uppercase tracking-widest text-white/35">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-white">{value}</p>
     </div>
   );
 }

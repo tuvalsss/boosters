@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { publicFetch, usd } from '@/lib/api';
+import { findSampleMarketplaceListing } from '@/lib/sample-marketplace';
 import { useAuth } from '@/lib/auth-context';
 import type { ListingRow } from '@/lib/types';
 
@@ -15,11 +16,21 @@ export default function ListingPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [sampleMode, setSampleMode] = useState(false);
 
   const load = useCallback(async () => {
+    setErr(null);
     try {
       setListing(await publicFetch<ListingRow>(`/marketplace/listings/${id}`));
+      setSampleMode(false);
     } catch (e) {
+      const sample = findSampleMarketplaceListing(id);
+      if (sample) {
+        setListing(sample);
+        setSampleMode(true);
+        setErr((e as Error).message);
+        return;
+      }
       setErr((e as Error).message);
     }
   }, [id]);
@@ -28,14 +39,18 @@ export default function ListingPage() {
     void load();
   }, [load]);
 
-  if (err) return <Center>{err}</Center>;
-  if (!listing) return <Center>Loading…</Center>;
+  if (err && !listing) return <Center>{err}</Center>;
+  if (!listing) return <Center>Loading...</Center>;
 
   const card = listing.vaultItem.physicalCard;
   const isOwn = dbUser?.id === listing.seller.id;
   const sold = listing.status !== 'ACTIVE';
 
   const buy = async () => {
+    if (sampleMode) {
+      setErr('This is a preview listing. Start/connect the API to buy live vaulted inventory.');
+      return;
+    }
     if (!authenticated) return login();
     setBusy(true);
     setErr(null);
@@ -46,7 +61,7 @@ export default function ListingPage() {
         body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }),
       });
       await refreshMe();
-      setMsg('Purchased! The card is now in your portfolio.');
+      setMsg('Purchased. The card is now in your portfolio.');
       setTimeout(() => router.push('/portfolio'), 900);
     } catch (e) {
       setErr((e as Error).message);
@@ -67,16 +82,20 @@ export default function ListingPage() {
 
       <div>
         <span className="text-xs uppercase tracking-widest text-white/45">
-          {listing.type === 'FIRST_PARTY' ? 'Official listing' : 'Peer-to-peer'}
+          {sampleMode
+            ? 'Preview listing'
+            : listing.type === 'FIRST_PARTY'
+              ? 'Official listing'
+              : 'Peer-to-peer'}
         </span>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">{card.cardName}</h1>
         <p className="mt-1 text-white/60">
-          {card.category} · {card.grader} {card.grade} {card.setName ? `· ${card.setName}` : ''}
+          {card.category} / {card.grader} {card.grade} {card.setName ? `/ ${card.setName}` : ''}
         </p>
 
         <p className="mt-6 text-4xl font-bold text-emerald-300">{usd(listing.priceUsdc)}</p>
         <p className="mt-1 text-xs text-white/40">
-          Settled in USDC · 2% fee included for the seller.
+          Settled in USDC. Marketplace fee is included in seller proceeds.
         </p>
 
         <div className="mt-7">
@@ -91,16 +110,28 @@ export default function ListingPage() {
           ) : (
             <button
               onClick={buy}
-              disabled={busy}
+              disabled={busy || sampleMode}
               className="w-full rounded-full bg-white py-3.5 text-sm font-semibold text-black hover:bg-white/90 disabled:opacity-60 sm:w-auto sm:px-10"
             >
-              {busy ? 'Processing…' : authenticated ? 'Buy now' : 'Login to buy'}
+              {busy
+                ? 'Processing...'
+                : sampleMode
+                  ? 'Preview only'
+                  : authenticated
+                    ? 'Buy now'
+                    : 'Login to buy'}
             </button>
           )}
         </div>
 
+        {sampleMode && (
+          <p className="mt-4 rounded-xl border border-amber-300/15 bg-amber-300/10 px-4 py-3 text-sm leading-6 text-amber-100/80">
+            The API is not reachable, so this page is showing a seeded preview card. Live checkout
+            requires the API, auth, and inventory ledger.
+          </p>
+        )}
         {msg && <p className="mt-4 text-sm text-emerald-300">{msg}</p>}
-        {err && <p className="mt-4 text-sm text-red-300">{err}</p>}
+        {err && !sampleMode && <p className="mt-4 text-sm text-red-300">{err}</p>}
 
         {listing.vaultItem.token && (
           <p className="mt-8 break-all font-mono text-[11px] text-white/30">

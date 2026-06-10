@@ -3,14 +3,17 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Inject,
   Param,
   Post,
   Query,
+  Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import type { FastifyRequest } from 'fastify';
 import type { User } from '@boosters/db';
 import type { Env } from '@boosters/config';
 import { ENV } from '../config/config.module.js';
@@ -47,6 +50,7 @@ class FailWithdrawalDto {
   @MaxLength(500)
   reason?: string;
 }
+type RawFastifyRequest = FastifyRequest & { rawBody?: Buffer };
 
 @Controller('payments')
 export class PaymentsController {
@@ -94,6 +98,18 @@ export class PaymentsController {
       if (!ok) throw new UnauthorizedException('Invalid webhook signature');
     }
     return this.payments.confirm(dto.reference);
+  }
+
+  /** Stripe Checkout webhook. Requires raw body + Stripe-Signature verification. */
+  @Public()
+  @Post('stripe/webhook')
+  async stripeWebhook(
+    @Req() req: RawFastifyRequest,
+    @Headers('stripe-signature') signature?: string,
+  ) {
+    if (!signature) throw new UnauthorizedException('Missing Stripe signature');
+    if (!req.rawBody) throw new BadRequestException('Missing raw body for Stripe verification');
+    return this.payments.handleStripeWebhook(req.rawBody, signature);
   }
 }
 

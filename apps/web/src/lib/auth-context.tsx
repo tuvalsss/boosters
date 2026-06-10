@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { parseApiResponse } from './api';
 import type { PublicUser } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
@@ -55,11 +56,8 @@ export function PrivyAuthBridge({ children }: { children: ReactNode }) {
           ...(init.headers ?? {}),
         },
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error((body as { message?: string }).message ?? `Request failed (${res.status})`);
-      }
-      return (res.status === 204 ? undefined : await res.json()) as T;
+      if (res.status === 204) return undefined as T;
+      return parseApiResponse<T>(res);
     },
     [getAccessToken],
   );
@@ -75,8 +73,7 @@ export function PrivyAuthBridge({ children }: { children: ReactNode }) {
         },
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error((body as { message?: string }).message ?? `Request failed (${res.status})`);
+        await parseApiResponse(res.clone());
       }
       return res;
     },

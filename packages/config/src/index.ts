@@ -86,8 +86,13 @@ export const envSchema = z.object({
 
   // Payments: Coinflow (USDC on-ramp). Sandbox by default; gated by
   // ENABLE_REAL_PAYMENTS for live. Webhooks are HMAC-verified with the API key.
+  PAYMENTS_PROVIDER: z.enum(['coinflow', 'stripe']).default('stripe'),
   COINFLOW_MERCHANT_ID: z.string().optional(),
   COINFLOW_API_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_SUCCESS_URL: z.string().optional(),
+  STRIPE_CANCEL_URL: z.string().optional(),
 
   // Treasury / fees guardrails.
   BUYBACK_FLOAT_FLOOR_USDC: intFromEnv.default(1000),

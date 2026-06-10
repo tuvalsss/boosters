@@ -10,6 +10,7 @@ async function bootstrap() {
   const env = bootstrapEnv();
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
     bufferLogs: false,
+    rawBody: true,
   });
 
   app.setGlobalPrefix('api');
@@ -31,7 +32,7 @@ async function bootstrap() {
 
   await app.listen(env.API_PORT, env.API_HOST);
   Logger.log(
-    `Boosters API on http://${env.API_HOST}:${env.API_PORT}/api (cluster=${env.SOLANA_CLUSTER}, payments=${env.PAYMENTS_MODE})`,
+    `Boosters API on http://${env.API_HOST}:${env.API_PORT}/api (cluster=${env.SOLANA_CLUSTER}, payments=${env.PAYMENTS_MODE}/${env.PAYMENTS_PROVIDER})`,
     'Bootstrap',
   );
 }
